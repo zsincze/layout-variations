@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Redirect — Layout Experiment</title>
+  <script>
+    (function () {
+      var path = window.location.pathname.replace(/\/index\.html$/, '') + '/editor.html';
+      var q = window.location.search || '';
+      window.location.replace(path + q);
+    })();
+  </script>
+</head>
+<body>
+  <p>Redirecting to editor… <a href="editor.html">Click here if not redirected</a>.</p>
+</body>
+</html>

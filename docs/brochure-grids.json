@@ -1,0 +1,73 @@
+[
+  {
+    "spread": 1,
+    "page": "Left",
+    "description": "3-col grid — full-width header, body (2 cols) + large vertical image (1 col), caption below image",
+    "areas": "\"header header header\" \"body body image\" \"body body image\" \"body body caption\"",
+    "rows": "auto 1fr 1fr auto",
+    "cols": "1fr 1fr 1fr",
+    "labels": ["header", "body", "image", "caption"]
+  },
+  {
+    "spread": 1,
+    "page": "Right",
+    "description": "3-col — header, body (2 cols) + quote top-right then large image (col 3)",
+    "areas": "\"header header header\" \"body body quote\" \"body body image\" \"body body image\"",
+    "rows": "auto 1fr 1fr 1fr",
+    "cols": "1fr 1fr 1fr",
+    "labels": ["header", "body", "quote", "image"]
+  },
+  {
+    "spread": 2,
+    "page": "Left",
+    "description": "Single full-page area (ad/photo)",
+    "areas": "\"full\"",
+    "rows": "1fr",
+    "labels": ["full"]
+  },
+  {
+    "spread": 2,
+    "page": "Right",
+    "description": "2-col — title full width, then body (left) + caption then image (right)",
+    "areas": "\"title title\" \"body caption\" \"body image\" \"body image\"",
+    "rows": "auto auto 1fr 1fr",
+    "cols": "1fr 1fr",
+    "labels": ["title", "body", "caption", "image"]
+  },
+  {
+    "spread": 3,
+    "page": "Left",
+    "description": "3-col — left = stacked images (gallery), middle+right = intro then body text",
+    "areas": "\"gallery intro intro\" \"gallery body body\" \"gallery body body\"",
+    "rows": "auto 1fr 1fr",
+    "cols": "auto 1fr 1fr",
+    "labels": ["gallery", "intro", "body"]
+  },
+  {
+    "spread": 3,
+    "page": "Right",
+    "description": "3×3 image grid + caption below",
+    "areas": "\"grid grid grid\" \"grid grid grid\" \"grid grid grid\" \"caption caption caption\"",
+    "rows": "1fr 1fr 1fr auto",
+    "cols": "1fr 1fr 1fr",
+    "labels": ["grid", "caption"]
+  },
+  {
+    "spread": 4,
+    "page": "Left",
+    "description": "Left block = title, para, 2 images; right = 2-col body text",
+    "areas": "\"title title text text\" \"para para text text\" \"img1 img1 text text\" \"img2 img2 text text\"",
+    "rows": "auto auto 1fr 1fr",
+    "cols": "1fr 1fr 1fr 1fr",
+    "labels": ["title", "para", "img1", "img2", "text"]
+  },
+  {
+    "spread": 4,
+    "page": "Right",
+    "description": "Quote top, 2-col body, full-width image row, 2-col body again",
+    "areas": "\"quote quote\" \"body body\" \"body body\" \"images images\" \"body body\"",
+    "rows": "auto 1fr 1fr auto 1fr",
+    "cols": "1fr 1fr",
+    "labels": ["quote", "body", "images"]
+  }
+]

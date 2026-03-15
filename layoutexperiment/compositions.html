@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Compositions — Layout Experiment</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect fill='%23666' width='32' height='32' rx='4'/><path fill='%23fff' d='M8 8h6v6H8zm10 0h6v6h-6zm-10 10h6v6H8zm10 0h6v6h-6z'/></svg>" type="image/svg+xml" />
+  <link rel="stylesheet" href="../styles/main.css" />
+  <style>
+    .compositions-page { max-width: 640px; margin: 0 auto; padding: var(--space-l); }
+    .compositions-back { margin-bottom: var(--space-l); }
+    .compositions-back a { color: var(--color-link); text-decoration: none; }
+    .compositions-back a:hover { text-decoration: underline; }
+    .compositions-title { margin: 0 0 var(--space-s); font-size: 1.5rem; }
+    .compositions-actions { margin-bottom: var(--space-xl); }
+    .compositions-list { list-style: none; margin: 0; padding: 0; }
+    .compositions-item { display: flex; align-items: center; justify-content: space-between; gap: var(--space-m); padding: var(--space-s) var(--space-m); margin-bottom: var(--space-xs); background: var(--color-surface-elevated); border: 1px solid var(--color-border); border-radius: var(--radius); }
+    .compositions-item-name { flex: 1; min-width: 0; font-weight: 500; }
+    .compositions-item-meta { font-size: 0.8125rem; color: var(--color-muted); margin-top: 2px; }
+    .compositions-item-actions { display: flex; gap: var(--space-s); flex-shrink: 0; }
+    .compositions-empty { padding: var(--space-xl); text-align: center; color: var(--color-muted); background: var(--color-surface-elevated); border: 1px dashed var(--color-border); border-radius: var(--radius); }
+    .compositions-loading { padding: var(--space-m); text-align: center; color: var(--color-muted); }
+    .compositions-error { padding: var(--space-m); background: #3a2020; color: #f88; border-radius: var(--radius); margin-bottom: var(--space-m); }
+  </style>
+</head>
+<body class="dark-ui">
+  <div class="compositions-page">
+    <nav class="compositions-back" aria-label="Breadcrumb">
+      <a href="../">← Back to home</a>
+    </nav>
+    <h1 class="compositions-title">Compositions</h1>
+    <p class="compositions-tagline" style="margin: 0 0 var(--space-l); color: var(--color-muted); font-size: 0.9375rem;">Create a new layout or open an existing one. Edits are saved automatically.</p>
+    <div class="compositions-actions">
+      <button type="button" id="compositions-new-btn" class="index-cta" style="cursor: pointer; border: 0; font: inherit;">Create new composition</button>
+    </div>
+    <div id="compositions-error" class="compositions-error" style="display: none;"></div>
+    <ul class="compositions-list" id="compositions-list" aria-label="Saved compositions"></ul>
+  </div>
+  <script>
+    console.log('[Compositions] Script started');
+    (function () {
+      console.log('[Compositions] List page loaded', window.location.href);
+      var origin = window.location.origin;
+      if (!origin || origin === 'null' || origin === 'file://') origin = 'http://localhost:3000';
+      var API = origin.replace(/\/$/, '') + '/api/compositions';
+      console.log('[Compositions] API base:', API, 'origin:', window.location.origin);
+
+      function formatDate(ms) {
+        if (!ms) return '';
+        var d = new Date(ms);
+        return d.toLocaleDateString(undefined, { dateStyle: 'short' }) + ' ' + d.toLocaleTimeString(undefined, { timeStyle: 'short' });
+      }
+
+      function editorUrl(id) {
+        var base = origin.replace(/\/$/, '');
+        return base + '/layoutexperiment/play.html#id=' + encodeURIComponent(id);
+      }
+
+      function showError(msg) {
+        var el = document.getElementById('compositions-error');
+        if (el) {
+          el.textContent = msg;
+          el.style.display = 'block';
+          el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }
+      function hideError() {
+        var el = document.getElementById('compositions-error');
+        if (el) el.style.display = 'none';
+      }
+
+      function renderList(comps) {
+        console.log('[Compositions] renderList called with', comps ? comps.length : 0, 'items', comps);
+        var list = document.getElementById('compositions-list');
+        if (!list) return;
+        list.innerHTML = '';
+        if (!comps || comps.length === 0) {
+          var empty = document.createElement('li');
+          empty.className = 'compositions-empty';
+          empty.textContent = 'No compositions yet. Create one to get started.';
+          list.appendChild(empty);
+          return;
+        }
+        comps.forEach(function (c) {
+          var li = document.createElement('li');
+          li.className = 'compositions-item';
+          var name = document.createElement('span');
+          name.className = 'compositions-item-name';
+          var title = document.createElement('div');
+          title.textContent = c.name || 'Untitled';
+          var meta = document.createElement('div');
+          meta.className = 'compositions-item-meta';
+          meta.textContent = formatDate(c.updatedAt || c.createdAt);
+          name.appendChild(title);
+          name.appendChild(meta);
+          var actions = document.createElement('div');
+          actions.className = 'compositions-item-actions';
+          var openBtn = document.createElement('a');
+          openBtn.href = editorUrl(c.id);
+          openBtn.textContent = 'Open';
+          openBtn.addEventListener('click', function (ev) {
+            console.log('[Compositions] Open clicked', c.id, c.name, '->', editorUrl(c.id));
+          });
+          openBtn.className = 'grid-cells-btn';
+          openBtn.style.cssText = 'display: inline-block; text-decoration: none; color: inherit;';
+          var deleteBtn = document.createElement('button');
+          deleteBtn.type = 'button';
+          deleteBtn.textContent = 'Delete';
+          deleteBtn.className = 'grid-cells-btn';
+          deleteBtn.setAttribute('aria-label', 'Delete ' + (c.name || 'composition'));
+          deleteBtn.addEventListener('click', function () {
+            if (!confirm("Delete \"" + (c.name || 'Untitled') + "\"? This cannot be undone.")) return;
+            fetch(API + '/' + encodeURIComponent(c.id), { method: 'DELETE' })
+              .then(function (r) { if (r.ok) loadList(); else return r.json().then(function (j) { showError(j.error || 'Delete failed'); }); })
+              .catch(function (e) { showError('Network error: ' + e.message); });
+          });
+          actions.appendChild(openBtn);
+          actions.appendChild(deleteBtn);
+          li.appendChild(name);
+          li.appendChild(actions);
+          list.appendChild(li);
+        });
+      }
+
+      function loadList() {
+        console.log('[Compositions] loadList: fetching', API);
+        var list = document.getElementById('compositions-list');
+        if (list) list.innerHTML = '<li class="compositions-loading">Loading…</li>';
+        hideError();
+        fetch(API)
+          .then(function (r) {
+            console.log('[Compositions] loadList: response', r.status, r.statusText, r.url);
+            if (!r.ok) throw new Error(r.status + ' ' + r.statusText);
+            return r.json();
+          })
+          .then(function (comps) {
+            console.log('[Compositions] loadList: got', Array.isArray(comps) ? comps.length : 0, 'compositions', comps);
+            renderList(comps);
+          })
+          .catch(function (e) {
+            console.error('[Compositions] loadList failed:', e);
+            showError('Could not load compositions. Run "npm start" in the project folder and open http://localhost:3000');
+            renderList([]);
+          });
+      }
+
+      document.getElementById('compositions-new-btn').addEventListener('click', function () {
+        console.log('[Compositions] Create new composition clicked, POST to', API);
+        var body = { name: 'Untitled', state: { gridCells: [], content: [], intent: 'inform' } };
+        fetch(API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        })
+          .then(function (r) {
+            console.log('[Compositions] Create response:', r.status, r.statusText, r.url);
+            if (!r.ok) return r.json().then(function (j) { throw new Error(j.error || 'Create failed'); });
+            return r.json();
+          })
+          .then(function (comp) {
+            console.log('[Compositions] Create success:', comp);
+            var url = editorUrl(comp.id);
+            console.log('[Compositions] Redirecting to', url);
+            window.location.href = url;
+          })
+          .catch(function (e) {
+            console.error('[Compositions] Create failed:', e);
+            showError('Could not create composition. Run "npm start" and use http://localhost:3000');
+          });
+      });
+
+      console.log('[Compositions] Calling loadList()');
+      loadList();
+    })();
+  </script>
+</body>
+</html>

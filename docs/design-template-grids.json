@@ -1,0 +1,184 @@
+[
+  {
+    "spread": 1,
+    "page": "Left",
+    "description": "ABOUT US — title top left, large image right two-thirds",
+    "areas": "\"title image image\" \"title image image\"",
+    "rows": "auto 1fr",
+    "cols": "1fr 1fr 1fr",
+    "labels": ["title", "image"]
+  },
+  {
+    "spread": 1,
+    "page": "Right",
+    "description": "Callout box top right, large image left two-thirds",
+    "areas": "\"callout image image\" \"callout image image\"",
+    "rows": "auto 1fr",
+    "cols": "1fr 1fr 1fr",
+    "labels": ["callout", "image"]
+  },
+  {
+    "spread": 2,
+    "page": "Left",
+    "description": "3D DESIGN — title + gold line, two columns body text",
+    "areas": "\"title title\" \"body body\"",
+    "rows": "auto 1fr",
+    "cols": "1fr 1fr",
+    "labels": ["title", "body"]
+  },
+  {
+    "spread": 2,
+    "page": "Right",
+    "description": "Two stacked image placeholders (2-row display)",
+    "areas": "\"image-top\" \"image-bottom\"",
+    "rows": "1fr 1fr",
+    "labels": ["image-top", "image-bottom"]
+  },
+  {
+    "spread": 3,
+    "page": "Left",
+    "description": "LANDSCAPING — large image top two-thirds, title bottom left",
+    "areas": "\"image image\" \"image image\" \"title title\"",
+    "rows": "1fr 1fr auto",
+    "cols": "1fr 1fr",
+    "labels": ["image", "title"]
+  },
+  {
+    "spread": 3,
+    "page": "Right",
+    "description": "Two columns body text",
+    "areas": "\"body body\"",
+    "rows": "1fr",
+    "cols": "1fr 1fr",
+    "labels": ["body"]
+  },
+  {
+    "spread": 4,
+    "page": "Left",
+    "description": "LANDING — full-height dark block, title + body text",
+    "areas": "\"block\"",
+    "rows": "1fr",
+    "labels": ["block"]
+  },
+  {
+    "spread": 4,
+    "page": "Right",
+    "description": "Tall narrow image left, two stacked squares right",
+    "areas": "\"tall top\" \"tall bottom\"",
+    "rows": "1fr 1fr",
+    "cols": "auto 1fr",
+    "labels": ["tall", "top", "bottom"]
+  },
+  {
+    "spread": 5,
+    "page": "Left",
+    "description": "INTERIOR — central dark block (CAPTURE DREAM / MAKE IT REAL)",
+    "areas": "\"block\"",
+    "rows": "1fr",
+    "labels": ["block"]
+  },
+  {
+    "spread": 5,
+    "page": "Right",
+    "description": "Title top center, two col text left, square image bottom right",
+    "areas": "\"title title\" \"body body\" \"body image\"",
+    "rows": "auto 1fr auto",
+    "cols": "1fr 1fr",
+    "labels": ["title", "body", "image"]
+  },
+  {
+    "spread": 6,
+    "page": "Left",
+    "description": "APARTMENT — title + line, body text, image bottom left",
+    "areas": "\"title title\" \"body body\" \"body image\"",
+    "rows": "auto 1fr auto",
+    "cols": "1fr 1fr",
+    "labels": ["title", "body", "image"]
+  },
+  {
+    "spread": 6,
+    "page": "Right",
+    "description": "Large image top two-thirds, dark label block bottom right",
+    "areas": "\"image image\" \"image label\"",
+    "rows": "1fr auto",
+    "cols": "1fr 1fr",
+    "labels": ["image", "label"]
+  },
+  {
+    "spread": 7,
+    "page": "Left",
+    "description": "STUDIO — large image with thin horizontal overlay",
+    "areas": "\"image\" \"overlay\"",
+    "rows": "1fr auto",
+    "labels": ["image", "overlay"]
+  },
+  {
+    "spread": 7,
+    "page": "Right",
+    "description": "Large image top three-quarters, title bottom center",
+    "areas": "\"image image\" \"title title\"",
+    "rows": "1fr auto",
+    "cols": "1fr 1fr",
+    "labels": ["image", "title"]
+  },
+  {
+    "spread": 8,
+    "page": "Left",
+    "description": "EXTERIOR — full dark page, title white top left",
+    "areas": "\"full\"",
+    "rows": "1fr",
+    "labels": ["full"]
+  },
+  {
+    "spread": 8,
+    "page": "Right",
+    "description": "Your Auto... top right, two columns body text",
+    "areas": "\"intro intro\" \"body body\"",
+    "rows": "auto 1fr",
+    "cols": "1fr 1fr",
+    "labels": ["intro", "body"]
+  },
+  {
+    "spread": 9,
+    "page": "Left",
+    "description": "Portfolio — dark image top left, two col text below",
+    "areas": "\"image image\" \"body body\"",
+    "rows": "1fr 1fr",
+    "cols": "1fr 1fr",
+    "labels": ["image", "body"]
+  },
+  {
+    "spread": 9,
+    "page": "Right",
+    "description": "2×2 grid of square blocks (portfolio grid)",
+    "areas": "\"a b\" \"c d\"",
+    "rows": "1fr 1fr",
+    "cols": "1fr 1fr",
+    "labels": ["a", "b", "c", "d"]
+  },
+  {
+    "spread": 10,
+    "page": "Left",
+    "description": "PORTFOLIO — large dark image, vertical title left, two col text",
+    "areas": "\"title image\" \"body image\"",
+    "rows": "auto 1fr",
+    "cols": "auto 1fr",
+    "labels": ["title", "image", "body"]
+  },
+  {
+    "spread": 10,
+    "page": "Right",
+    "description": "Large dark image, contact line at bottom",
+    "areas": "\"image\" \"contact\"",
+    "rows": "1fr auto",
+    "labels": ["image", "contact"]
+  },
+  {
+    "spread": 11,
+    "page": "Single",
+    "description": "Blank page, footer (site + logo/tagline)",
+    "areas": "\"main\" \"footer\"",
+    "rows": "1fr auto",
+    "labels": ["main", "footer"]
+  }
+]

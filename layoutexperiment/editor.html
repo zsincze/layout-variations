@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Layout Experiment — Designer Playground</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect fill='%23666' width='32' height='32' rx='4'/><path fill='%23fff' d='M8 8h6v6H8zm10 0h6v6h-6zm-10 10h6v6H8zm10 0h6v6h-6z'/></svg>" type="image/svg+xml" />
+  <link rel="stylesheet" href="../styles/main.css" />
+</head>
+<body class="dark-ui">
+  <script>
+    (function () {
+      var COMPOSITIONS_KEY = 'layout-experiment-compositions';
+      var STATE_KEY = 'layout-experiment-state';
+      var params = new URLSearchParams(window.location.search);
+      var id = params.get('id');
+      var isNew = params.get('new') === '1' || params.get('new') === 'true';
+      if (!id && window.location.hash) {
+        var hash = window.location.hash.slice(1);
+        var m = /^id=(.+)$/.exec(hash);
+        if (m) id = decodeURIComponent(m[1]);
+        else if (hash) id = decodeURIComponent(hash);
+      }
+
+      function getCompositions() {
+        try { return JSON.parse(localStorage.getItem(COMPOSITIONS_KEY) || '[]'); } catch (e) { return []; }
+      }
+      function saveCompositions(list) {
+        try { localStorage.setItem(COMPOSITIONS_KEY, JSON.stringify(list)); } catch (e) {}
+      }
+      function defaultState() {
+        return { gridCells: [], content: [], intent: 'inform' };
+      }
+      function generateId() {
+        if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+        return 'comp-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+      }
+
+      if (isNew) {
+        var newId = generateId();
+        var list = getCompositions();
+        list.push({
+          id: newId,
+          name: 'Untitled',
+          state: defaultState(),
+          createdAt: Date.now(),
+          updatedAt: Date.now()
+        });
+        saveCompositions(list);
+        var path = window.location.pathname;
+        if (!path.endsWith('editor.html')) path = (path.replace(/\/?$/, '') + '/editor.html');
+        window.location.replace(path + '#id=' + encodeURIComponent(newId));
+        return;
+      }
+
+      if (!id) {
+        window.location.replace('/layoutexperiment/compositions.html');
+        return;
+      }
+      var list = getCompositions();
+      var comp = list.filter(function (c) { return c.id === id; })[0];
+      if (!comp) {
+        window.location.replace('/layoutexperiment/compositions.html');
+        return;
+      }
+      try {
+        localStorage.setItem(STATE_KEY, JSON.stringify(comp.state || {}));
+      } catch (e) {}
+      window.__currentCompositionId = id;
+      var origSetItem = localStorage.setItem.bind(localStorage);
+      localStorage.setItem = function (key, value) {
+        origSetItem(key, value);
+        if (key === STATE_KEY && window.__currentCompositionId) {
+          var list = getCompositions();
+          var c = list.filter(function (x) { return x.id === window.__currentCompositionId; })[0];
+          if (c) {
+            try {
+              c.state = typeof value === 'string' ? JSON.parse(value) : value;
+              c.updatedAt = Date.now();
+              saveCompositions(list);
+            } catch (err) {}
+          }
+        }
+      };
+    })();
+  </script>
+  <div class="layoutexperiment-page">
+    <!-- Back navigation -->
+    <nav class="layoutexperiment-back" aria-label="Breadcrumb">
+      <a href="/layoutexperiment/compositions.html">← Back to compositions</a>
+    </nav>
+
+    <!-- Main content: first information architecture -->
+    <div class="layoutexperiment-body">
+      <!-- Sidebar: two panels (layout controls + content options) -->
+      <aside class="layoutexperiment-sidebar" aria-label="Controls">
+        <div class="layoutexperiment-panels">
+          <div class="layoutexperiment-panel layoutexperiment-panel-layout">
+            <section class="layoutexperiment-section" aria-labelledby="layout-controls-heading">
+              <h2 id="layout-controls-heading">Layout controls</h2>
+
+          <div class="control-decorations" role="group" aria-labelledby="decorations-label">
+            <label class="toggle-wrap" for="toggle-decorations">
+              <input type="checkbox" id="toggle-decorations" class="toggle-input" checked aria-describedby="decorations-label" />
+              <span id="decorations-label" class="control-label toggle-label">Decorations</span>
+            </label>
+          </div>
+
+          <div class="control-intent" role="group" aria-labelledby="intent-label">
+            <label id="intent-label" class="control-label">Intent</label>
+            <div class="intent-custom-wrap">
+              <button type="button" id="intent-select" class="intent-custom-trigger" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="intent-label" aria-controls="intent-listbox">
+                <span class="intent-custom-icon intent-icon-inform" id="intent-current-icon" aria-hidden="true"></span>
+                <span class="intent-custom-label" id="intent-current-label">Inform</span>
+                <span class="intent-custom-chevron" aria-hidden="true">▼</span>
+              </button>
+              <ul id="intent-listbox" class="intent-custom-list" role="listbox" aria-labelledby="intent-label" hidden>
+                <li id="intent-option-inform" role="option" tabindex="-1" data-value="inform" aria-selected="true">
+                  <span class="intent-option-icon intent-icon-inform" aria-hidden="true"></span>
+                  <span class="intent-option-label">Inform</span>
+                </li>
+                <li id="intent-option-compare" role="option" tabindex="-1" data-value="compare">
+                  <span class="intent-option-icon intent-icon-compare" aria-hidden="true"></span>
+                  <span class="intent-option-label">Compare</span>
+                </li>
+                <li id="intent-option-promote" role="option" tabindex="-1" data-value="promote">
+                  <span class="intent-option-icon intent-icon-promote" aria-hidden="true"></span>
+                  <span class="intent-option-label">Promote</span>
+                </li>
+                <li id="intent-option-storytell" role="option" tabindex="-1" data-value="storytell">
+                  <span class="intent-option-icon intent-icon-storytell" aria-hidden="true"></span>
+                  <span class="intent-option-label">Storytell</span>
+                </li>
+                <li id="intent-option-showcase" role="option" tabindex="-1" data-value="showcase">
+                  <span class="intent-option-icon intent-icon-showcase" aria-hidden="true"></span>
+                  <span class="intent-option-label">Showcase</span>
+                </li>
+                <li id="intent-option-explain" role="option" tabindex="-1" data-value="explain">
+                  <span class="intent-option-icon intent-icon-explain" aria-hidden="true"></span>
+                  <span class="intent-option-label">Explain</span>
+                </li>
+                <li id="intent-option-educate" role="option" tabindex="-1" data-value="educate">
+                  <span class="intent-option-icon intent-icon-educate" aria-hidden="true"></span>
+                  <span class="intent-option-label">Educate</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="control-artboard" role="group" aria-labelledby="artboard-label">
+            <label id="artboard-label" class="control-label">Artboard</label>
+            <div class="artboard-custom-wrap">
+              <button type="button" id="artboard-aspect-select" class="artboard-custom-trigger" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="artboard-label" aria-controls="artboard-listbox">
+                <span class="artboard-thumb artboard-thumb-portrait" id="artboard-current-thumb" aria-hidden="true"></span>
+                <span class="artboard-custom-label" id="artboard-current-label">Portrait</span>
+                <span class="artboard-custom-chevron" aria-hidden="true">▼</span>
+              </button>
+              <ul id="artboard-listbox" class="artboard-custom-list" role="listbox" aria-labelledby="artboard-label" hidden>
+                <li role="option" tabindex="-1" data-value="square" aria-selected="false">
+                  <span class="artboard-thumb artboard-thumb-square" aria-hidden="true"></span>
+                  <span class="artboard-option-label">Square</span>
+                </li>
+                <li role="option" tabindex="-1" data-value="portrait" aria-selected="true">
+                  <span class="artboard-thumb artboard-thumb-portrait" aria-hidden="true"></span>
+                  <span class="artboard-option-label">Portrait</span>
+                </li>
+                <li role="option" tabindex="-1" data-value="landscape" aria-selected="false">
+                  <span class="artboard-thumb artboard-thumb-landscape" aria-hidden="true"></span>
+                  <span class="artboard-option-label">Landscape</span>
+                </li>
+                <li role="option" tabindex="-1" data-value="wide-portrait" aria-selected="false">
+                  <span class="artboard-thumb artboard-thumb-wide-portrait" aria-hidden="true"></span>
+                  <span class="artboard-option-label">Wide portrait</span>
+                </li>
+                <li role="option" tabindex="-1" data-value="wide-landscape" aria-selected="false">
+                  <span class="artboard-thumb artboard-thumb-wide-landscape" aria-hidden="true"></span>
+                  <span class="artboard-option-label">Wide landscape</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="control-artboard-bg" id="control-artboard-bg" role="group" aria-labelledby="artboard-bg-label">
+            <label id="artboard-bg-label" class="control-label" for="artboard-bg-input">Background</label>
+            <div class="artboard-bg-wrap">
+              <input type="color" id="artboard-bg-color" class="artboard-bg-swatch" value="#ffffff" aria-label="Pick color" title="Pick color" />
+              <input type="text" id="artboard-bg-input" class="artboard-bg-input" value="#ffffff" placeholder="#ffffff" maxlength="9" aria-labelledby="artboard-bg-label" spellcheck="false" />
+            </div>
+          </div>
+
+          <div class="control-margin" role="group" aria-labelledby="margin-label">
+            <label id="margin-label" class="control-label" for="margin-input">Margin (px)</label>
+            <div class="slider-input-wrap">
+              <input type="range" id="margin-slider" class="slider-input-range" min="0" max="100" value="20" step="1" aria-labelledby="margin-label" />
+              <input type="number" id="margin-input" class="margin-input slider-input-number" min="0" max="100" value="20" step="1" aria-labelledby="margin-label" />
+            </div>
+          </div>
+
+          <div class="control-css-grid-gap" id="control-css-grid-gap" role="group" aria-labelledby="css-grid-gap-label">
+            <label id="css-grid-gap-label" class="control-label" for="css-grid-gap-input">Gap (px)</label>
+            <div class="slider-input-wrap">
+              <input type="range" id="css-grid-gap-slider" class="slider-input-range" min="0" max="50" value="10" step="1" aria-labelledby="css-grid-gap-label" />
+              <input type="number" id="css-grid-gap-input" class="margin-input slider-input-number" min="0" max="50" value="10" step="1" aria-labelledby="css-grid-gap-label" />
+            </div>
+          </div>
+
+          <div class="control-cell-number" id="control-cell-number" role="group" aria-labelledby="cell-number-label">
+            <label id="cell-number-label" class="control-label" for="cell-number-input">Cells</label>
+            <div class="slider-input-wrap">
+              <input type="range" id="cell-number-slider" class="slider-input-range" min="4" max="24" value="12" step="1" aria-labelledby="cell-number-label" />
+              <input type="number" id="cell-number-input" class="margin-input slider-input-number" min="4" max="24" value="12" step="1" aria-labelledby="cell-number-label" />
+            </div>
+          </div>
+
+          <div class="control-artboard-scale" id="control-artboard-scale" role="group" aria-labelledby="artboard-scale-label">
+            <label id="artboard-scale-label" class="control-label" for="artboard-scale-input">Scale (%)</label>
+            <div class="slider-input-wrap">
+              <input type="range" id="artboard-scale-slider" class="slider-input-range" min="50" max="200" value="100" step="5" aria-labelledby="artboard-scale-label" />
+              <input type="number" id="artboard-scale-input" class="margin-input slider-input-number" min="50" max="200" value="100" step="5" aria-labelledby="artboard-scale-label" />
+            </div>
+          </div>
+
+            </section>
+          </div>
+          <div class="layoutexperiment-panel layoutexperiment-panel-content">
+            <section class="layoutexperiment-section content-options" aria-labelledby="content-options-heading">
+              <h2 id="content-options-heading">Content options</h2>
+
+          <div class="control-decorations" role="group" aria-labelledby="content-decorations-label">
+            <label class="toggle-wrap" for="toggle-content-decorations">
+              <input type="checkbox" id="toggle-content-decorations" class="toggle-input" checked aria-describedby="content-decorations-label" />
+              <span id="content-decorations-label" class="control-label toggle-label">Decorations</span>
+            </label>
+          </div>
+
+          <div class="content-add-wrap" id="content-add-wrap" hidden>
+            <div class="content-add-menu" id="content-add-menu" role="menu" hidden>
+              <div class="content-add-submenu-wrap">
+                <button type="button" role="menuitem" class="content-add-option content-add-submenu-trigger" id="content-image-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="content-image-submenu">
+                  Image
+                  <span class="content-add-submenu-chevron" aria-hidden="true">▸</span>
+                </button>
+                <div class="content-add-submenu" id="content-image-submenu" role="menu" hidden></div>
+              </div>
+              <button type="button" role="menuitem" class="content-add-option content-add-option-color" data-type="color">Solid color</button>
+              <div class="content-add-submenu-wrap">
+                <button type="button" role="menuitem" class="content-add-option content-add-submenu-trigger" id="content-text-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="content-text-submenu">
+                  Text
+                  <span class="content-add-submenu-chevron" aria-hidden="true">▸</span>
+                </button>
+                <div class="content-add-submenu" id="content-text-submenu" role="menu" hidden>
+                  <button type="button" role="menuitem" class="content-add-option" data-type="text" data-role="title">Title</button>
+                  <button type="button" role="menuitem" class="content-add-option" data-type="text" data-role="headline">Headline</button>
+                  <button type="button" role="menuitem" class="content-add-option" data-type="text" data-role="paragraph">Paragraph</button>
+                  <button type="button" role="menuitem" class="content-add-option" data-type="text" data-role="website">Website</button>
+                  <button type="button" role="menuitem" class="content-add-option" data-type="text" data-role="logo">Logo</button>
+                </div>
+              </div>
+              <div class="content-add-submenu-wrap">
+                <button type="button" role="menuitem" class="content-add-option content-add-submenu-trigger" id="content-content-led-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="content-micro-content-led">
+                  Content-led
+                  <span class="content-add-submenu-chevron" aria-hidden="true">▸</span>
+                </button>
+                <div class="content-add-submenu content-add-submenu-micro content-add-submenu-options" id="content-micro-content-led" role="menu" hidden>
+                  <button type="button" role="menuitem" class="content-add-option content-add-option-with-icon" data-type="micro" data-role="heading-content">
+                    <span class="micro-option-icon micro-icon-heading-content" aria-hidden="true"></span>
+                    <span class="micro-option-label">Heading + content</span>
+                  </button>
+                  <button type="button" role="menuitem" class="content-add-option content-add-option-with-icon" data-type="micro" data-role="two-headings-contents">
+                    <span class="micro-option-icon micro-icon-two-headings-contents" aria-hidden="true"></span>
+                    <span class="micro-option-label">Two headings + contents</span>
+                  </button>
+                  <button type="button" role="menuitem" class="content-add-option content-add-option-with-icon" data-type="micro" data-role="heading-image">
+                    <span class="micro-option-icon micro-icon-heading-image" aria-hidden="true"></span>
+                    <span class="micro-option-label">Heading + image</span>
+                  </button>
+                  <button type="button" role="menuitem" class="content-add-option content-add-option-with-icon" data-type="micro" data-role="two-col-heading-image">
+                    <span class="micro-option-icon micro-icon-two-col-heading-image" aria-hidden="true"></span>
+                    <span class="micro-option-label">Two col: heading + image</span>
+                  </button>
+                  <button type="button" role="menuitem" class="content-add-option content-add-option-with-icon" data-type="micro" data-role="image-caption">
+                    <span class="micro-option-icon micro-icon-image-caption" aria-hidden="true"></span>
+                    <span class="micro-option-label">Image + caption</span>
+                  </button>
+                  <button type="button" role="menuitem" class="content-add-option content-add-option-with-icon" data-type="micro" data-role="heading-two-contents">
+                    <span class="micro-option-icon micro-icon-heading-two-contents" aria-hidden="true"></span>
+                    <span class="micro-option-label">Heading + two contents</span>
+                  </button>
+                  <button type="button" role="menuitem" class="content-add-option content-add-option-with-icon" data-type="micro" data-role="media-object">
+                    <span class="micro-option-icon micro-icon-media-object" aria-hidden="true"></span>
+                    <span class="micro-option-label">Media object</span>
+                  </button>
+                  <button type="button" role="menuitem" class="content-add-option content-add-option-with-icon" data-type="micro" data-role="quote">
+                    <span class="micro-option-icon micro-icon-quote" aria-hidden="true"></span>
+                    <span class="micro-option-label">Quote / testimonial</span>
+                  </button>
+                </div>
+              </div>
+              <div class="content-add-submenu-wrap">
+                <button type="button" role="menuitem" class="content-add-option content-add-submenu-trigger" id="content-primitive-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="content-micro-primitive">
+                  Primitive
+                  <span class="content-add-submenu-chevron" aria-hidden="true">▸</span>
+                </button>
+                <div class="content-add-submenu content-add-submenu-micro content-add-submenu-options" id="content-micro-primitive" role="menu" hidden>
+                  <button type="button" role="menuitem" class="content-add-option content-add-option-with-icon" data-type="micro" data-role="stack">
+                    <span class="micro-option-icon micro-icon-stack" aria-hidden="true"></span>
+                    <span class="micro-option-label">Stack</span>
+                  </button>
+                  <button type="button" role="menuitem" class="content-add-option content-add-option-with-icon" data-type="micro" data-role="grid">
+                    <span class="micro-option-icon micro-icon-grid" aria-hidden="true"></span>
+                    <span class="micro-option-label">Grid</span>
+                  </button>
+                  <button type="button" role="menuitem" class="content-add-option content-add-option-with-icon" data-type="micro" data-role="columns">
+                    <span class="micro-option-icon micro-icon-columns" aria-hidden="true"></span>
+                    <span class="micro-option-label">Columns</span>
+                  </button>
+                  <button type="button" role="menuitem" class="content-add-option content-add-option-with-icon" data-type="micro" data-role="cluster">
+                    <span class="micro-option-icon micro-icon-cluster" aria-hidden="true"></span>
+                    <span class="micro-option-label">Cluster</span>
+                  </button>
+                  <button type="button" role="menuitem" class="content-add-option content-add-option-with-icon" data-type="micro" data-role="cover">
+                    <span class="micro-option-icon micro-icon-cover" aria-hidden="true"></span>
+                    <span class="micro-option-label">Cover</span>
+                  </button>
+                </div>
+              </div>
+              <div class="content-add-submenu-wrap">
+                <button type="button" role="menuitem" class="content-add-option content-add-submenu-trigger" id="content-decorative-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="content-micro-decorative">
+                  Decorative
+                  <span class="content-add-submenu-chevron" aria-hidden="true">▸</span>
+                </button>
+                <div class="content-add-submenu content-add-submenu-micro content-add-submenu-options" id="content-micro-decorative" role="menu" hidden>
+                  <button type="button" role="menuitem" class="content-add-option content-add-option-with-icon" data-type="micro" data-role="heading-with-rules">
+                    <span class="micro-option-icon micro-icon-heading-with-rules" aria-hidden="true"></span>
+                    <span class="micro-option-label">Heading with rules</span>
+                  </button>
+                  <button type="button" role="menuitem" class="content-add-option content-add-option-with-icon" data-type="micro" data-role="label-value">
+                    <span class="micro-option-icon micro-icon-label-value" aria-hidden="true"></span>
+                    <span class="micro-option-label">Label + value</span>
+                  </button>
+                  <button type="button" role="menuitem" class="content-add-option content-add-option-with-icon" data-type="micro" data-role="step-numbered">
+                    <span class="micro-option-icon micro-icon-step-numbered" aria-hidden="true"></span>
+                    <span class="micro-option-label">Step / numbered</span>
+                  </button>
+                  <button type="button" role="menuitem" class="content-add-option content-add-option-with-icon" data-type="micro" data-role="list-icon">
+                    <span class="micro-option-icon micro-icon-list-icon" aria-hidden="true"></span>
+                    <span class="micro-option-label">List + icon</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-cells-wrap" id="grid-cells-wrap">
+            <h3 class="grid-cells-heading">Grid cells</h3>
+            <ul class="grid-cells-list" id="grid-cells-list" aria-label="Content areas in grid"></ul>
+            <button type="button" class="grid-cells-add-btn" id="grid-cells-add-btn">Add cell</button>
+          </div>
+
+          <ul class="content-list" id="content-list" aria-label="Content blocks in layout" hidden></ul>
+            </section>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Canvas: generated layout output + grid reference -->
+      <div class="layoutexperiment-canvas-wrap" aria-label="Generated layout">
+        <div class="canvas-main">
+          <div class="canvas-artboard-wrap" id="canvas-artboard-wrap">
+            <div class="artboard show-margin-decorations show-content-decorations" id="artboard" data-aspect="portrait" data-grid="css-grid" role="img" aria-label="Artboard">
+              <p class="layout-placeholder" id="layout-placeholder" hidden>No cells yet. Click <strong>Add cell</strong> in the Content panel to add content to the grid.</p>
+              <div id="layout-output" class="layout-output" aria-live="polite" hidden></div>
+              <div class="artboard-grid-lines" id="artboard-grid-lines" aria-hidden="true"></div>
+            </div>
+          </div>
+          <!-- Grid reference (hidden for now; code and data in docs/layout-grid-25.json) -->
+          <aside class="canvas-grid-reference" aria-label="Layout grid reference" hidden>
+            <figure class="grid-reference-figure">
+              <img src="../assets/layout-grid-reference.png" alt="25 layout variations — 5×5 grid of square templates" class="grid-reference-image" />
+              <figcaption class="grid-reference-caption">Reference</figcaption>
+            </figure>
+            <h2 class="grid-reference-heading">Layout grid (5×5)</h2>
+            <p class="grid-reference-desc">Deconstructed grids from the reference — each square = one layout.</p>
+            <div class="grid-reference-list" id="grid-reference-list"></div>
+          </aside>
+        </div>
+      </div>
+
+      <!-- Rag panel (right) -->
+      <aside class="layoutexperiment-rag-panel" aria-label="Rag">
+        <section class="layoutexperiment-section" aria-labelledby="rag-panel-heading">
+          <h2 id="rag-panel-heading">Rag</h2>
+        </section>
+      </aside>
+    </div>
+  </div>
+  <script src="content-options.js"></script>
+  <script src="layout-engine.js"></script>
+  <script>
+    (function () {
+      var container = document.getElementById('grid-reference-list');
+      if (!container) return;
+
+      function renderGridList(grids) {
+        container.innerHTML = '';
+        var byRow = {};
+        grids.forEach(function (g) {
+          var r = g.row != null ? g.row : g.spread;
+          if (!byRow[r]) byRow[r] = [];
+          byRow[r].push(g);
+        });
+
+        Object.keys(byRow).sort(function (a, b) { return Number(a) - Number(b); }).forEach(function (rowNum) {
+          var card = document.createElement('div');
+          card.className = 'grid-reference-card';
+          card.innerHTML = '<h3 class="grid-reference-spread">Row ' + rowNum + '</h3>';
+          var pages = document.createElement('div');
+          pages.className = 'grid-reference-pages';
+
+          byRow[rowNum].sort(function (a, b) { return (a.col || 0) - (b.col || 0); }).forEach(function (g) {
+            var pageWrap = document.createElement('div');
+            pageWrap.className = 'grid-reference-page-wrap';
+            var label = g.col != null ? 'Col ' + g.col : (g.page || '') + ' page';
+            pageWrap.innerHTML = '<span class="grid-reference-page-label">' + label + '</span>';
+            var gridEl = document.createElement('div');
+            gridEl.className = 'grid-reference-diagram';
+            gridEl.style.gridTemplateAreas = g.areas;
+            gridEl.style.gridTemplateRows = g.rows || '1fr';
+            gridEl.style.gridTemplateColumns = g.cols || '1fr';
+            (g.labels || []).forEach(function (label) {
+              var cell = document.createElement('div');
+              cell.className = 'grid-reference-cell';
+              cell.setAttribute('data-area', label);
+              cell.style.gridArea = label;
+              cell.textContent = label;
+              gridEl.appendChild(cell);
+            });
+            pageWrap.appendChild(gridEl);
+            pages.appendChild(pageWrap);
+          });
+
+          card.appendChild(pages);
+          container.appendChild(card);
+        });
+      }
+
+      fetch('../docs/layout-grid-25.json')
+        .then(function (r) { return r.json(); })
+        .then(renderGridList)
+        .catch(function () {
+          container.innerHTML = '<p class="grid-reference-fallback">Grid reference failed to load. Use <code>docs/layout-grid-25.json</code>.</p>';
+        });
+    })();
+  </script>
+  <script>
+    (function () {
+      var STORAGE_KEY = 'layout-experiment-state';
+      var trigger = document.getElementById('intent-select');
+      var listbox = document.getElementById('intent-listbox');
+      var currentIcon = document.getElementById('intent-current-icon');
+      var currentLabel = document.getElementById('intent-current-label');
+      if (!trigger || !listbox) return;
+
+      function getFullState() {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch (e) { return {}; }
+      }
+      function saveFullState(state) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+      }
+
+      function setSelected(value) {
+        var opt = listbox.querySelector('[data-value="' + value + '"]');
+        listbox.querySelectorAll('[role="option"]').forEach(function (o) { o.setAttribute('aria-selected', 'false'); });
+        if (opt) {
+          opt.setAttribute('aria-selected', 'true');
+          currentLabel.textContent = opt.querySelector('.intent-option-label').textContent;
+          currentIcon.className = 'intent-custom-icon intent-icon-' + value;
+          trigger.setAttribute('data-value', value);
+          trigger.dispatchEvent(new Event('change', { bubbles: true }));
+          var state = getFullState();
+          state.intent = value;
+          saveFullState(state);
+        }
+      }
+
+      var state = getFullState();
+      if (state.intent) setSelected(state.intent);
+      else trigger.setAttribute('data-value', 'inform');
+
+      trigger.addEventListener('click', function () {
+        var open = !listbox.hidden;
+        listbox.hidden = open;
+        trigger.setAttribute('aria-expanded', !open);
+      });
+      listbox.querySelectorAll('[role="option"]').forEach(function (opt) {
+        opt.addEventListener('click', function () {
+          setSelected(opt.dataset.value);
+          listbox.hidden = true;
+          trigger.setAttribute('aria-expanded', 'false');
+        });
+      });
+      document.addEventListener('click', function (e) {
+        if (trigger.contains(e.target) || listbox.contains(e.target)) return;
+        listbox.hidden = true;
+        trigger.setAttribute('aria-expanded', 'false');
+      });
+    })();
+  </script>
+  <script>
+    (function () {
+      var STORAGE_KEY = 'layout-experiment-state';
+      var trigger = document.getElementById('artboard-aspect-select');
+      var listbox = document.getElementById('artboard-listbox');
+      var currentThumb = document.getElementById('artboard-current-thumb');
+      var currentLabel = document.getElementById('artboard-current-label');
+      var artboard = document.getElementById('artboard');
+      if (!trigger || !listbox || !artboard) return;
+
+      function getFullState() {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch (e) { return {}; }
+      }
+      function saveFullState(state) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+      }
+
+      function setSelected(value) {
+        var opt = listbox.querySelector('[data-value="' + value + '"]');
+        listbox.querySelectorAll('[role="option"]').forEach(function (o) { o.setAttribute('aria-selected', 'false'); });
+        if (opt) {
+          opt.setAttribute('aria-selected', 'true');
+          currentLabel.textContent = opt.querySelector('.artboard-option-label').textContent;
+          currentThumb.className = 'artboard-thumb artboard-thumb-' + value;
+          artboard.setAttribute('data-aspect', value);
+          if (window.buildArtboardGridLines) window.buildArtboardGridLines();
+          var state = getFullState();
+          state.artboard = value;
+          saveFullState(state);
+        }
+      }
+
+      var state = getFullState();
+      if (state.artboard) setSelected(state.artboard);
+
+      trigger.addEventListener('click', function () {
+        var open = !listbox.hidden;
+        listbox.hidden = open;
+        trigger.setAttribute('aria-expanded', !open);
+      });
+      listbox.querySelectorAll('[role="option"]').forEach(function (opt) {
+        opt.addEventListener('click', function () {
+          setSelected(opt.dataset.value);
+          listbox.hidden = true;
+          trigger.setAttribute('aria-expanded', 'false');
+        });
+      });
+      document.addEventListener('click', function (e) {
+        if (trigger.contains(e.target) || listbox.contains(e.target)) return;
+        listbox.hidden = true;
+        trigger.setAttribute('aria-expanded', 'false');
+      });
+    })();
+  </script>
+  <script>
+    (function () {
+      var STORAGE_KEY = 'layout-experiment-state';
+      var bgInput = document.getElementById('artboard-bg-input');
+      var bgColor = document.getElementById('artboard-bg-color');
+      var artboard = document.getElementById('artboard');
+      if (!bgInput || !artboard) return;
+
+      function getFullState() {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch (e) { return {}; }
+      }
+      function saveFullState(state) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+      }
+      function parseHex(str) {
+        if (!str || typeof str !== 'string') return null;
+        str = str.trim().replace(/^#/, '');
+        if (/^[0-9a-fA-F]{3}$/.test(str)) {
+          str = str[0] + str[0] + str[1] + str[1] + str[2] + str[2];
+        }
+        if (!/^[0-9a-fA-F]{6}$/.test(str)) return null;
+        return '#' + str.toLowerCase();
+      }
+      function applyArtboardBg(hex) {
+        var parsed = parseHex(hex);
+        if (!parsed) return;
+        artboard.style.setProperty('--artboard-bg', parsed);
+        bgInput.value = parsed;
+        if (bgColor) bgColor.value = parsed;
+        var state = getFullState();
+        state.artboardBg = parsed;
+        saveFullState(state);
+      }
+
+      var state = getFullState();
+      if (state.artboardBg && parseHex(state.artboardBg)) {
+        applyArtboardBg(state.artboardBg);
+      } else {
+        artboard.style.setProperty('--artboard-bg', '#fff');
+      }
+
+      bgInput.addEventListener('change', function () { applyArtboardBg(bgInput.value); });
+      bgInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); applyArtboardBg(bgInput.value); }
+      });
+      if (bgColor) {
+        bgColor.addEventListener('input', function () { applyArtboardBg(bgColor.value); });
+        bgColor.addEventListener('change', function () { applyArtboardBg(bgColor.value); });
+      }
+    })();
+  </script>
+  <script>
+    (function () {
+      var STORAGE_KEY = 'layout-experiment-state';
+      var marginInput = document.getElementById('margin-input');
+      var marginSlider = document.getElementById('margin-slider');
+      var artboard = document.getElementById('artboard');
+      if (!marginInput || !artboard) return;
+
+      function getFullState() {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch (e) { return {}; }
+      }
+      function saveFullState(state) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+      }
+
+      function applyMargin(px) {
+        var val = Math.max(0, Math.min(100, Number(px)));
+        marginInput.value = val;
+        if (marginSlider) marginSlider.value = val;
+        artboard.style.setProperty('--artboard-margin', val + 'px');
+        var state = getFullState();
+        state.margin = val;
+        saveFullState(state);
+      }
+
+      var state = getFullState();
+      if (state.margin != null && !isNaN(state.margin)) {
+        applyMargin(state.margin);
+      } else {
+        artboard.style.setProperty('--artboard-margin', '20px');
+      }
+
+      if (marginSlider) marginSlider.addEventListener('input', function () { applyMargin(marginSlider.value); });
+      marginInput.addEventListener('input', function () { applyMargin(marginInput.value); });
+      marginInput.addEventListener('change', function () { applyMargin(marginInput.value); });
+    })();
+  </script>
+  <script>
+    (function () {
+      var artboard = document.getElementById('artboard');
+      var gridLinesEl = document.getElementById('artboard-grid-lines');
+      if (!artboard || !gridLinesEl) return;
+
+      var ROWS_BY_ASPECT = { square: 12, portrait: 16, landscape: 9, 'wide-portrait': 21, 'wide-landscape': 7 };
+
+      function getCellCount() {
+        var input = document.getElementById('cell-number-input');
+        if (!input) return 12;
+        return Math.max(4, Math.min(24, Number(input.value) || 12));
+      }
+
+      function buildArtboardGridLines() {
+        if (!gridLinesEl || !artboard) return;
+        var aspect = artboard.getAttribute('data-aspect') || 'portrait';
+        var cols = getCellCount();
+        var baseRows = ROWS_BY_ASPECT[aspect] != null ? ROWS_BY_ASPECT[aspect] : 16;
+        var rows = Math.max(1, Math.round((baseRows / 12) * cols));
+        artboard.setAttribute('data-grid-cols', cols);
+        artboard.setAttribute('data-grid-rows', rows);
+        gridLinesEl.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
+        gridLinesEl.style.gridTemplateRows = 'repeat(' + rows + ', 1fr)';
+        gridLinesEl.innerHTML = '';
+        for (var i = 0; i < cols * rows; i++) {
+          var cell = document.createElement('div');
+          cell.className = 'artboard-grid-line-cell';
+          cell.setAttribute('aria-hidden', 'true');
+          gridLinesEl.appendChild(cell);
+        }
+      }
+
+      window.buildArtboardGridLines = buildArtboardGridLines;
+
+      artboard.setAttribute('data-grid', 'css-grid');
+      gridLinesEl.hidden = false;
+      document.body.classList.add('layout-grid-css');
+      buildArtboardGridLines();
+      if (window.applyCssGridGap) window.applyCssGridGap();
+      if (window.applyCellNumber) window.applyCellNumber();
+      if (window.renderGridCellsList) window.renderGridCellsList();
+      if (window.__layoutEngineUpdate) window.__layoutEngineUpdate();
+    })();
+  </script>
+  <script>
+    (function () {
+      var STORAGE_KEY = 'layout-experiment-state';
+      var artboard = document.getElementById('artboard');
+      if (!artboard) return;
+      try {
+        var state = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        var composition = state.composition || 'default';
+        artboard.setAttribute('data-composition', composition);
+      } catch (e) {
+        artboard.setAttribute('data-composition', 'default');
+      }
+    })();
+  </script>
+  <script>
+    (function () {
+      var STORAGE_KEY = 'layout-experiment-state';
+      var gapInput = document.getElementById('css-grid-gap-input');
+      var gapSlider = document.getElementById('css-grid-gap-slider');
+      var artboard = document.getElementById('artboard');
+      if (!gapInput || !artboard) return;
+
+      function getFullState() {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch (e) { return {}; }
+      }
+      function saveFullState(state) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+      }
+
+      function applyCssGridGap() {
+        var raw = Number(gapInput.value);
+        var val = Math.max(0, Math.min(50, isNaN(raw) ? 10 : raw));
+        gapInput.value = val;
+        if (gapSlider) gapSlider.value = val;
+        artboard.style.setProperty('--artboard-grid-gap', val + 'px');
+        var state = getFullState();
+        state.cssGridGap = val;
+        saveFullState(state);
+      }
+
+      window.applyCssGridGap = applyCssGridGap;
+
+      var state = getFullState();
+      if (state.cssGridGap != null && !isNaN(state.cssGridGap)) {
+        var val = Math.max(0, Math.min(50, state.cssGridGap));
+        gapInput.value = val;
+        if (gapSlider) gapSlider.value = val;
+        applyCssGridGap();
+      } else {
+        artboard.style.setProperty('--artboard-grid-gap', '10px');
+      }
+
+      if (gapSlider) gapSlider.addEventListener('input', function () { gapInput.value = gapSlider.value; applyCssGridGap(); });
+      gapInput.addEventListener('input', function () { applyCssGridGap(); });
+      gapInput.addEventListener('change', function () { applyCssGridGap(); });
+    })();
+  </script>
+  <script>
+    (function () {
+      var STORAGE_KEY = 'layout-experiment-state';
+      var scaleInput = document.getElementById('artboard-scale-input');
+      var scaleSlider = document.getElementById('artboard-scale-slider');
+      var wrap = document.getElementById('canvas-artboard-wrap');
+      if (!scaleInput || !wrap) return;
+
+      function getFullState() {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch (e) { return {}; }
+      }
+      function saveFullState(state) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+      }
+
+      function applyArtboardScale() {
+        var pct = Math.max(50, Math.min(200, Number(scaleInput.value) || 100));
+        var scale = pct / 100;
+        scaleInput.value = pct;
+        if (scaleSlider) scaleSlider.value = pct;
+        wrap.style.transform = 'scale(' + scale + ')';
+        wrap.style.transformOrigin = 'center center';
+        var state = getFullState();
+        state.artboardScale = pct;
+        saveFullState(state);
+      }
+
+      var state = getFullState();
+      if (state.artboardScale != null && !isNaN(state.artboardScale)) {
+        var pct = Math.max(50, Math.min(200, state.artboardScale));
+        scaleInput.value = pct;
+        if (scaleSlider) scaleSlider.value = pct;
+        applyArtboardScale();
+      } else {
+        wrap.style.transform = 'scale(1)';
+        wrap.style.transformOrigin = 'center center';
+      }
+
+      if (scaleSlider) scaleSlider.addEventListener('input', function () { scaleInput.value = scaleSlider.value; applyArtboardScale(); });
+      scaleInput.addEventListener('input', function () { applyArtboardScale(); });
+      scaleInput.addEventListener('change', function () { applyArtboardScale(); });
+    })();
+  </script>
+  <script>
+    (function () {
+      var STORAGE_KEY = 'layout-experiment-state';
+      var cellNumberInput = document.getElementById('cell-number-input');
+      var cellNumberSlider = document.getElementById('cell-number-slider');
+      if (!cellNumberInput) return;
+
+      function getFullState() {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch (e) { return {}; }
+      }
+      function saveFullState(state) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+      }
+
+      function applyCellNumber() {
+        var val = Math.max(4, Math.min(24, Number(cellNumberInput.value) || 12));
+        cellNumberInput.value = val;
+        if (cellNumberSlider) cellNumberSlider.value = val;
+        var state = getFullState();
+        state.cssGridCells = val;
+        saveFullState(state);
+        if (window.buildArtboardGridLines) window.buildArtboardGridLines();
+        if (window.__layoutEngineUpdate) window.__layoutEngineUpdate();
+      }
+
+      window.applyCellNumber = applyCellNumber;
+
+      var state = getFullState();
+      if (state.cssGridCells != null && !isNaN(state.cssGridCells)) {
+        var val = Math.max(4, Math.min(24, state.cssGridCells));
+        cellNumberInput.value = val;
+        if (cellNumberSlider) cellNumberSlider.value = val;
+        var gridLinesEl = document.getElementById('artboard-grid-lines');
+        if (gridLinesEl && !gridLinesEl.hidden && window.buildArtboardGridLines) window.buildArtboardGridLines();
+      }
+
+      if (cellNumberSlider) cellNumberSlider.addEventListener('input', function () { cellNumberInput.value = cellNumberSlider.value; applyCellNumber(); });
+      cellNumberInput.addEventListener('input', function () { applyCellNumber(); });
+      cellNumberInput.addEventListener('change', function () { applyCellNumber(); });
+    })();
+  </script>
+  <script>
+    (function () {
+      var STORAGE_KEY = 'layout-experiment-state';
+      var toggle = document.getElementById('toggle-decorations');
+      var artboard = document.getElementById('artboard');
+      if (!toggle || !artboard) return;
+
+      function getFullState() {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch (e) { return {}; }
+      }
+      function saveFullState(state) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+      }
+
+      function applyDecorations(show) {
+        toggle.checked = show;
+        if (show) {
+          artboard.classList.add('show-margin-decorations');
+          artboard.classList.remove('hide-grid-decorations');
+        } else {
+          artboard.classList.remove('show-margin-decorations');
+          artboard.classList.add('hide-grid-decorations');
+        }
+        var state = getFullState();
+        state.showDecorations = show;
+        saveFullState(state);
+      }
+
+      var state = getFullState();
+      if (state.showDecorations === false) applyDecorations(false);
+      else { toggle.checked = true; artboard.classList.add('show-margin-decorations'); artboard.classList.remove('hide-grid-decorations'); }
+
+      toggle.addEventListener('change', function () { applyDecorations(toggle.checked); });
+    })();
+  </script>
+  <script>
+    (function () {
+      var STORAGE_KEY = 'layout-experiment-state';
+      var toggleContent = document.getElementById('toggle-content-decorations');
+      var artboard = document.getElementById('artboard');
+      if (!toggleContent || !artboard) return;
+
+      function getFullState() {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch (e) { return {}; }
+      }
+      function saveFullState(state) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+      }
+
+      function applyContentDecorations(show) {
+        toggleContent.checked = show;
+        if (show) artboard.classList.add('show-content-decorations');
+        else artboard.classList.remove('show-content-decorations');
+        var state = getFullState();
+        state.showContentDecorations = show;
+        saveFullState(state);
+      }
+
+      var state = getFullState();
+      if (state.showContentDecorations === false) applyContentDecorations(false);
+      else { toggleContent.checked = true; artboard.classList.add('show-content-decorations'); }
+
+      toggleContent.addEventListener('change', function () { applyContentDecorations(toggleContent.checked); });
+    })();
+  </script>
+  <script>
+    (function () {
+      var STORAGE_KEY = 'layout-experiment-state';
+      var ROWS_BY_ASPECT = { square: 12, portrait: 16, landscape: 9, 'wide-portrait': 21, 'wide-landscape': 7 };
+      var CONTENT_LABELS = { text: { title: 'Title', headline: 'Headline', paragraph: 'Paragraph', website: 'Website', logo: 'Logo' }, micro: { 'heading-content': 'Heading + content', 'two-headings-contents': 'Two headings + contents', 'heading-image': 'Heading + image', 'two-col-heading-image': 'Two col: heading + image', 'image-caption': 'Image + caption', 'heading-two-contents': 'Heading + two contents', 'media-object': 'Media object', 'quote': 'Quote / testimonial', 'stack': 'Stack', 'grid': 'Grid', 'columns': 'Columns', 'cluster': 'Cluster', 'cover': 'Cover', 'heading-with-rules': 'Heading with rules', 'label-value': 'Label + value', 'step-numbered': 'Step numbered', 'list-icon': 'List with icons' }, image: {} };
+      var gridCellsContentPortal = null;
+      var gridCellsSizePortal = null;
+      var listEl = document.getElementById('grid-cells-list');
+      var addBtn = document.getElementById('grid-cells-add-btn');
+      var artboard = document.getElementById('artboard');
+      var gridCellsDragFromIndex = -1; /* set when drag starts from handle, reset on mouseup */
+      if (!listEl || !addBtn) return;
+
+      function getFullState() {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch (e) { return {}; }
+      }
+      function saveFullState(state) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+      }
+      function getGridCells() {
+        var state = getFullState();
+        return Array.isArray(state.gridCells) ? state.gridCells : [];
+      }
+      function saveGridCells(cells) {
+        var state = getFullState();
+        state.gridCells = cells;
+        saveFullState(state);
+      }
+      function getMaxCols() {
+        if (artboard) return Math.max(1, parseInt(artboard.getAttribute('data-grid-cols') || '12', 10));
+        var inp = document.getElementById('cell-number-input');
+        return inp ? Math.max(4, Math.min(24, Number(inp.value) || 12)) : 12;
+      }
+      function getMaxRows() {
+        if (artboard) return Math.max(1, parseInt(artboard.getAttribute('data-grid-rows') || '16', 10));
+        var aspect = artboard ? (artboard.getAttribute('data-aspect') || 'portrait') : 'portrait';
+        var base = ROWS_BY_ASPECT[aspect] != null ? ROWS_BY_ASPECT[aspect] : 16;
+        return Math.max(1, Math.round((base / 12) * getMaxCols()));
+      }
+      var CONTENT_THUMBS_BASE = '../assets/assets-images/thumbs/';
+      function getContentLabel(type, role, asset) {
+        if (type === 'image') return asset || 'Image';
+        if (type === 'color') return 'Solid color';
+        if (type === 'micro' && CONTENT_LABELS.micro[role]) return CONTENT_LABELS.micro[role];
+        if (CONTENT_LABELS.text[role]) return CONTENT_LABELS.text[role];
+        return role || type || 'Content';
+      }
+      function createContentThumbInner(type, role, asset) {
+        if (type === 'image' && asset) {
+          var img = document.createElement('img');
+          img.src = CONTENT_THUMBS_BASE + asset;
+          img.alt = '';
+          img.setAttribute('aria-hidden', 'true');
+          return img;
+        }
+        if (type === 'color') {
+          var colorSpan = document.createElement('span');
+          colorSpan.className = 'grid-cells-content-trigger-thumb-color';
+          colorSpan.setAttribute('aria-hidden', 'true');
+          return colorSpan;
+        }
+        if (type === 'micro' && role) {
+          var microSpan = document.createElement('span');
+          microSpan.className = 'micro-option-icon micro-icon-' + role;
+          microSpan.setAttribute('aria-hidden', 'true');
+          return microSpan;
+        }
+        var textSpan = document.createElement('span');
+        textSpan.className = 'grid-cells-content-trigger-thumb-text';
+        textSpan.setAttribute('aria-hidden', 'true');
+        textSpan.textContent = 'Aa';
+        return textSpan;
+      }
+      function dispatchContentChanged() {
+        document.dispatchEvent(new CustomEvent('content-changed'));
+        if (window.__layoutEngineUpdate) window.__layoutEngineUpdate();
+      }
+
+      function createCellRangeSlider(label, maxVal, startVal, endVal, onChange) {
+        var max = Math.max(1, maxVal);
+        var start = Math.max(1, Math.min(startVal, max));
+        var end = Math.max(start, Math.min(Math.max(endVal, start), max));
+        var wrap = document.createElement('div');
+        wrap.className = 'grid-cells-range-wrap';
+        var labelEl = document.createElement('span');
+        labelEl.className = 'grid-cells-range-label';
+        labelEl.textContent = label;
+        var track = document.createElement('div');
+        track.className = 'grid-cells-range-track';
+        track.setAttribute('role', 'group');
+        track.setAttribute('aria-label', label + ' cells');
+        var fill = document.createElement('div');
+        fill.className = 'grid-cells-range-fill';
+        var thumbStart = document.createElement('button');
+        thumbStart.type = 'button';
+        thumbStart.className = 'grid-cells-range-thumb';
+        thumbStart.setAttribute('aria-label', 'First cell');
+        thumbStart.setAttribute('aria-valuenow', start);
+        thumbStart.setAttribute('aria-valuemin', 1);
+        thumbStart.setAttribute('aria-valuemax', max);
+        var thumbEnd = document.createElement('button');
+        thumbEnd.type = 'button';
+        thumbEnd.className = 'grid-cells-range-thumb';
+        thumbEnd.setAttribute('aria-label', 'Last cell');
+        thumbEnd.setAttribute('aria-valuenow', end);
+        thumbEnd.setAttribute('aria-valuemin', 1);
+        thumbEnd.setAttribute('aria-valuemax', max);
+        track.appendChild(fill);
+        track.appendChild(thumbStart);
+        track.appendChild(thumbEnd);
+        wrap.appendChild(labelEl);
+        wrap.appendChild(track);
+
+        function valueToPercent(v) {
+          if (max <= 1) return 0;
+          return ((v - 1) / (max - 1)) * 100;
+        }
+        function setPositions() {
+          var pctStart = valueToPercent(start);
+          var pctEnd = valueToPercent(end);
+          fill.style.left = pctStart + '%';
+          fill.style.width = (pctEnd - pctStart) + '%';
+          thumbStart.style.left = pctStart + '%';
+          thumbEnd.style.left = pctEnd + '%';
+          thumbStart.setAttribute('aria-valuenow', start);
+          thumbEnd.setAttribute('aria-valuenow', end);
+        }
+        setPositions();
+
+        function valueFromX(clientX) {
+          var rect = track.getBoundingClientRect();
+          var x = clientX - rect.left;
+          var pct = Math.max(0, Math.min(1, x / rect.width));
+          if (max <= 1) return 1;
+          var v = 1 + Math.round(pct * (max - 1));
+          return Math.max(1, Math.min(max, v));
+        }
+        function setupDrag(thumb, isStart) {
+          function onMove(e) {
+            var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            var val = valueFromX(clientX);
+            if (isStart) {
+              start = Math.max(1, Math.min(val, end));
+            } else {
+              end = Math.max(start, Math.min(val, max));
+            }
+            setPositions();
+            onChange(start, end);
+          }
+          function onUp() {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+            document.removeEventListener('touchmove', onMove, { capture: true });
+            document.removeEventListener('touchend', onUp, { capture: true });
+          }
+          thumb.addEventListener('mousedown', function (e) {
+            e.preventDefault();
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
+          });
+          thumb.addEventListener('touchstart', function (e) {
+            e.preventDefault();
+            document.addEventListener('touchmove', onMove, { capture: true });
+            document.addEventListener('touchend', onUp, { capture: true });
+          }, { passive: false });
+        }
+        setupDrag(thumbStart, true);
+        setupDrag(thumbEnd, false);
+
+        wrap.updateValues = function (newStart, newEnd) {
+          start = Math.max(1, Math.min(newStart, max));
+          end = Math.max(start, Math.min(newEnd, max));
+          setPositions();
+        };
+        return wrap;
+      }
+
+      function renderGridCellsList() {
+        listEl.innerHTML = '';
+        var cells = getGridCells();
+        var maxCols = getMaxCols();
+        var maxRows = getMaxRows();
+        cells.forEach(function (cell, index) {
+          var li = document.createElement('li');
+          li.className = 'grid-cells-item';
+          li.dataset.index = String(index);
+          var summary = document.createElement('div');
+          summary.className = 'grid-cells-item-summary';
+          var dragHandle = document.createElement('span');
+          dragHandle.className = 'grid-cells-drag-handle';
+          dragHandle.setAttribute('aria-hidden', 'true');
+          dragHandle.title = 'Drag to reorder';
+          dragHandle.textContent = '\u22EE\u22EE'; /* ⋮⋮ grip icon */
+          var contentWrap = document.createElement('div');
+          contentWrap.className = 'grid-cells-content-wrap';
+          var contentTrigger = document.createElement('button');
+          contentTrigger.type = 'button';
+          contentTrigger.className = 'grid-cells-content-trigger';
+          contentTrigger.setAttribute('aria-haspopup', 'listbox');
+          contentTrigger.setAttribute('aria-expanded', 'false');
+          contentTrigger.setAttribute('aria-label', 'Content type');
+          var contentTriggerThumb = document.createElement('span');
+          contentTriggerThumb.className = 'grid-cells-content-trigger-thumb';
+          contentTriggerThumb.appendChild(createContentThumbInner(cell.type, cell.role, cell.asset));
+          var contentTriggerLabel = document.createElement('span');
+          contentTriggerLabel.className = 'grid-cells-content-trigger-label';
+          contentTriggerLabel.textContent = getContentLabel(cell.type, cell.role, cell.asset);
+          var contentTriggerChevron = document.createElement('span');
+          contentTriggerChevron.className = 'grid-cells-content-trigger-chevron';
+          contentTriggerChevron.setAttribute('aria-hidden', 'true');
+          contentTriggerChevron.textContent = '\u25BC';
+          contentTrigger.appendChild(contentTriggerThumb);
+          contentTrigger.appendChild(contentTriggerLabel);
+          contentTrigger.appendChild(contentTriggerChevron);
+          contentWrap.appendChild(contentTrigger);
+          var sizeToggleBtn = document.createElement('button');
+          sizeToggleBtn.type = 'button';
+          sizeToggleBtn.className = 'grid-cells-size-toggle';
+          sizeToggleBtn.setAttribute('aria-label', 'Size');
+          sizeToggleBtn.setAttribute('aria-haspopup', 'dialog');
+          sizeToggleBtn.setAttribute('aria-expanded', 'false');
+          var sizeIcon = document.createElement('span');
+          sizeIcon.className = 'grid-cells-size-icon';
+          sizeIcon.setAttribute('aria-hidden', 'true');
+          sizeIcon.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><rect x="2" y="2" width="5" height="5" rx="0.5"/><rect x="9" y="2" width="5" height="5" rx="0.5"/><rect x="2" y="9" width="5" height="5" rx="0.5"/><rect x="9" y="9" width="5" height="5" rx="0.5"/></svg>';
+          sizeToggleBtn.appendChild(sizeIcon);
+          var removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.className = 'grid-cells-remove';
+          var removeIcon = document.createElement('img');
+          removeIcon.src = '../assets/assets-vector/icons/delete.svg';
+          removeIcon.alt = '';
+          removeIcon.setAttribute('aria-hidden', 'true');
+          removeBtn.appendChild(removeIcon);
+          removeBtn.setAttribute('aria-label', 'Remove cell');
+          summary.appendChild(dragHandle);
+          summary.appendChild(contentWrap);
+          summary.appendChild(sizeToggleBtn);
+          summary.appendChild(removeBtn);
+          li.appendChild(summary);
+          listEl.appendChild(li);
+
+          function closeSizePopup() {
+            if (gridCellsSizePortal && gridCellsSizePortal.parentNode) gridCellsSizePortal.parentNode.removeChild(gridCellsSizePortal);
+            gridCellsSizePortal = null;
+            sizeToggleBtn.setAttribute('aria-expanded', 'false');
+          }
+          sizeToggleBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (gridCellsSizePortal) {
+              closeSizePopup();
+              return;
+            }
+            if (gridCellsContentPortal) {
+              gridCellsContentPortal.parentNode.removeChild(gridCellsContentPortal);
+              gridCellsContentPortal = null;
+              listEl.querySelectorAll('.grid-cells-content-trigger[aria-expanded="true"]').forEach(function (b) { b.setAttribute('aria-expanded', 'false'); });
+            }
+            var cell = getGridCells()[index];
+            if (!cell) return;
+            var maxCols = getMaxCols();
+            var maxRows = getMaxRows();
+            var colSlider = createCellRangeSlider('Col', maxCols, cell.colStart || 1, cell.colEnd || 2, function (s, e) {
+              var cells = getGridCells().slice();
+              var c = cells[index];
+              if (c) { c.colStart = s; c.colEnd = e; saveGridCells(cells); dispatchContentChanged(); }
+            });
+            var rowSlider = createCellRangeSlider('Row', maxRows, cell.rowStart || 1, cell.rowEnd || 2, function (s, e) {
+              var cells = getGridCells().slice();
+              var c = cells[index];
+              if (c) { c.rowStart = s; c.rowEnd = e; saveGridCells(cells); dispatchContentChanged(); }
+            });
+            var popup = document.createElement('div');
+            popup.className = 'grid-cells-size-popup';
+            popup.setAttribute('role', 'dialog');
+            popup.setAttribute('aria-label', 'Size');
+            var header = document.createElement('div');
+            header.className = 'grid-cells-size-popup-header';
+            var closeBtn = document.createElement('button');
+            closeBtn.type = 'button';
+            closeBtn.className = 'grid-cells-size-popup-close';
+            closeBtn.setAttribute('aria-label', 'Close');
+            closeBtn.textContent = '\u2715';
+            closeBtn.addEventListener('click', function (ev) { ev.stopPropagation(); closeSizePopup(); });
+            header.appendChild(closeBtn);
+            var body = document.createElement('div');
+            body.className = 'grid-cells-size-popup-body';
+            body.appendChild(colSlider);
+            body.appendChild(rowSlider);
+            function makeAlignGroup(label, key, options, current) {
+              var wrap = document.createElement('div');
+              wrap.className = 'grid-cells-align-group';
+              var lab = document.createElement('span');
+              lab.className = 'grid-cells-align-label';
+              lab.textContent = label;
+              wrap.appendChild(lab);
+              var btnWrap = document.createElement('div');
+              btnWrap.className = 'grid-cells-align-btns';
+              options.forEach(function (opt) {
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'grid-cells-align-btn' + (current === opt.value ? ' is-selected' : '');
+                btn.textContent = opt.label;
+                btn.dataset.value = opt.value;
+                btn.addEventListener('click', function () {
+                  var cells = getGridCells().slice();
+                  var c = cells[index];
+                  if (c) {
+                    c[key] = opt.value;
+                    saveGridCells(cells);
+                    btnWrap.querySelectorAll('.grid-cells-align-btn').forEach(function (b) { b.classList.remove('is-selected'); });
+                    btn.classList.add('is-selected');
+                    dispatchContentChanged();
+                  }
+                });
+                btnWrap.appendChild(btn);
+              });
+              wrap.appendChild(btnWrap);
+              return wrap;
+            }
+            var alignH = cell.alignH || 'left';
+            var alignV = cell.alignV || 'top';
+            body.appendChild(makeAlignGroup('Horizontal', 'alignH', [
+              { value: 'left', label: 'Left' },
+              { value: 'center', label: 'Centre' },
+              { value: 'right', label: 'Right' }
+            ], alignH));
+            body.appendChild(makeAlignGroup('Vertical', 'alignV', [
+              { value: 'top', label: 'Top' },
+              { value: 'center', label: 'Centre' },
+              { value: 'bottom', label: 'Bottom' }
+            ], alignV));
+            var hasText = cell.type === 'text' || cell.type === 'micro';
+            if (hasText) {
+              var textColorGroup = document.createElement('div');
+              textColorGroup.className = 'grid-cells-align-group';
+              var textColorLabel = document.createElement('span');
+              textColorLabel.className = 'grid-cells-align-label';
+              textColorLabel.textContent = 'Text color';
+              textColorGroup.appendChild(textColorLabel);
+              var textColorWrap = document.createElement('div');
+              textColorWrap.className = 'grid-cells-text-color-wrap';
+              var defaultTextColor = '#1a1a1a';
+              var currentTextColor = cell.textColor || defaultTextColor;
+              var textColorSwatch = document.createElement('input');
+              textColorSwatch.type = 'color';
+              textColorSwatch.className = 'grid-cells-text-color-swatch';
+              textColorSwatch.value = currentTextColor;
+              textColorSwatch.setAttribute('aria-label', 'Pick text color');
+              var textColorInput = document.createElement('input');
+              textColorInput.type = 'text';
+              textColorInput.className = 'grid-cells-text-color-input';
+              textColorInput.value = cell.textColor || '';
+              textColorInput.placeholder = defaultTextColor;
+              textColorInput.maxLength = 9;
+              textColorInput.setAttribute('aria-label', 'Text color hex');
+              function applyTextColor(hex) {
+                var cells = getGridCells().slice();
+                var c = cells[index];
+                if (!c) return;
+                var val = (hex || '').trim();
+                c.textColor = val || undefined;
+                if (val) {
+                  textColorSwatch.value = val;
+                  textColorInput.value = val;
+                } else {
+                  textColorSwatch.value = defaultTextColor;
+                  textColorInput.value = '';
+                }
+                saveGridCells(cells);
+                dispatchContentChanged();
+              }
+              textColorSwatch.addEventListener('input', function () {
+                applyTextColor(textColorSwatch.value);
+              });
+              textColorInput.addEventListener('change', function () {
+                var raw = textColorInput.value.trim();
+                if (/^#[0-9A-Fa-f]{6}$/.test(raw) || /^#[0-9A-Fa-f]{3}$/.test(raw)) applyTextColor(raw);
+                else if (raw === '') { var cells = getGridCells().slice(); var c = cells[index]; if (c) { c.textColor = undefined; saveGridCells(cells); textColorSwatch.value = defaultTextColor; dispatchContentChanged(); } }
+              });
+              textColorWrap.appendChild(textColorSwatch);
+              textColorWrap.appendChild(textColorInput);
+              textColorGroup.appendChild(textColorWrap);
+              body.appendChild(textColorGroup);
+            }
+            var bgColorGroup = document.createElement('div');
+            bgColorGroup.className = 'grid-cells-align-group';
+            var bgColorLabel = document.createElement('span');
+            bgColorLabel.className = 'grid-cells-align-label';
+            bgColorLabel.textContent = 'Background color';
+            bgColorGroup.appendChild(bgColorLabel);
+            var bgColorWrap = document.createElement('div');
+            bgColorWrap.className = 'grid-cells-text-color-wrap';
+            var defaultBgColor = '#ffffff';
+            var currentBgColor = cell.backgroundColor || defaultBgColor;
+            var bgColorSwatch = document.createElement('input');
+            bgColorSwatch.type = 'color';
+            bgColorSwatch.className = 'grid-cells-text-color-swatch';
+            bgColorSwatch.value = currentBgColor;
+            bgColorSwatch.setAttribute('aria-label', 'Pick background color');
+            var bgColorInput = document.createElement('input');
+            bgColorInput.type = 'text';
+            bgColorInput.className = 'grid-cells-text-color-input';
+            bgColorInput.value = cell.backgroundColor || '';
+            bgColorInput.placeholder = 'None';
+            bgColorInput.maxLength = 9;
+            bgColorInput.setAttribute('aria-label', 'Background color hex');
+            var bgColorNoneBtn = document.createElement('button');
+            bgColorNoneBtn.type = 'button';
+            bgColorNoneBtn.className = 'grid-cells-bg-none-btn';
+            bgColorNoneBtn.textContent = 'None';
+            bgColorNoneBtn.setAttribute('aria-label', 'No background');
+            function applyBgColor(hex) {
+              var cells = getGridCells().slice();
+              var c = cells[index];
+              if (!c) return;
+              var val = (hex || '').trim();
+              c.backgroundColor = val || undefined;
+              if (val) {
+                bgColorSwatch.value = val;
+                bgColorInput.value = val;
+              } else {
+                bgColorSwatch.value = defaultBgColor;
+                bgColorInput.value = '';
+              }
+              saveGridCells(cells);
+              dispatchContentChanged();
+            }
+            bgColorSwatch.addEventListener('input', function () { applyBgColor(bgColorSwatch.value); });
+            bgColorInput.addEventListener('change', function () {
+              var raw = bgColorInput.value.trim();
+              if (/^#[0-9A-Fa-f]{6}$/.test(raw) || /^#[0-9A-Fa-f]{3}$/.test(raw)) applyBgColor(raw);
+              else if (raw === '') { var cells = getGridCells().slice(); var c = cells[index]; if (c) { c.backgroundColor = undefined; saveGridCells(cells); bgColorSwatch.value = defaultBgColor; dispatchContentChanged(); } }
+            });
+            bgColorNoneBtn.addEventListener('click', function () {
+              var cells = getGridCells().slice();
+              var c = cells[index];
+              if (c) {
+                c.backgroundColor = undefined;
+                saveGridCells(cells);
+                bgColorSwatch.value = defaultBgColor;
+                bgColorInput.value = '';
+                dispatchContentChanged();
+              }
+            });
+            bgColorWrap.appendChild(bgColorSwatch);
+            bgColorWrap.appendChild(bgColorInput);
+            bgColorWrap.appendChild(bgColorNoneBtn);
+            bgColorGroup.appendChild(bgColorWrap);
+            body.appendChild(bgColorGroup);
+            popup.appendChild(header);
+            popup.appendChild(body);
+            var rect = sizeToggleBtn.getBoundingClientRect();
+            var portal = document.createElement('div');
+            portal.className = 'grid-cells-size-portal';
+            portal.style.position = 'fixed';
+            portal.style.left = rect.left + 'px';
+            portal.style.top = (rect.bottom + 4) + 'px';
+            portal.style.zIndex = '9999';
+            portal.style.width = '0';
+            portal.style.height = '0';
+            portal.style.overflow = 'visible';
+            portal.appendChild(popup);
+            document.body.appendChild(portal);
+            gridCellsSizePortal = portal;
+            sizeToggleBtn.setAttribute('aria-expanded', 'true');
+            var onOutsideClick = function (ev) {
+              if (portal.contains(ev.target) || sizeToggleBtn.contains(ev.target)) return;
+              document.removeEventListener('click', onOutsideClick);
+              closeSizePopup();
+            };
+            setTimeout(function () { document.addEventListener('click', onOutsideClick); }, 0);
+          });
+          (function (itemIndex, itemEl) {
+            var lastOverLi = null;
+            var insertAfter = false;
+            function clearOver() {
+              listEl.querySelectorAll('.grid-cells-item-insert-before, .grid-cells-item-insert-after').forEach(function (el) {
+                el.classList.remove('grid-cells-item-insert-before', 'grid-cells-item-insert-after');
+              });
+              lastOverLi = null;
+            }
+            function onMove(e) {
+              var under = document.elementFromPoint(e.clientX, e.clientY);
+              var overLi = under ? under.closest('.grid-cells-item') : null;
+              if (overLi && overLi !== itemEl) {
+                var rect = overLi.getBoundingClientRect();
+                var midY = rect.top + rect.height / 2;
+                var after = e.clientY >= midY;
+                if (overLi !== lastOverLi || insertAfter !== after) {
+                  clearOver();
+                  overLi.classList.add(after ? 'grid-cells-item-insert-after' : 'grid-cells-item-insert-before');
+                  lastOverLi = overLi;
+                  insertAfter = after;
+                }
+              } else {
+                clearOver();
+              }
+            }
+            function onUp(e) {
+              document.removeEventListener('mousemove', onMove);
+              document.removeEventListener('mouseup', onUp);
+              itemEl.classList.remove('grid-cells-item-dragging');
+              var toIndex = itemIndex;
+              if (lastOverLi) {
+                var idx = parseInt(lastOverLi.dataset.index, 10);
+                toIndex = insertAfter ? idx + 1 : idx;
+              }
+              clearOver();
+              if (toIndex !== itemIndex && !isNaN(toIndex)) {
+                var cells = getGridCells().slice();
+                var moved = cells.splice(itemIndex, 1)[0];
+                if (moved) {
+                  cells.splice(toIndex, 0, moved);
+                  saveGridCells(cells);
+                  renderGridCellsList();
+                  dispatchContentChanged();
+                }
+              }
+              gridCellsDragFromIndex = -1;
+            }
+            dragHandle.addEventListener('mousedown', function (e) {
+              e.preventDefault();
+              e.stopPropagation();
+              gridCellsDragFromIndex = itemIndex;
+              itemEl.classList.add('grid-cells-item-dragging');
+              document.addEventListener('mousemove', onMove);
+              document.addEventListener('mouseup', onUp);
+            });
+          })(index, li);
+          function closeContentListbox() {
+            if (gridCellsContentPortal && gridCellsContentPortal.parentNode) gridCellsContentPortal.parentNode.removeChild(gridCellsContentPortal);
+            gridCellsContentPortal = null;
+            contentTrigger.setAttribute('aria-expanded', 'false');
+          }
+          contentTrigger.addEventListener('click', function (e) {
+            e.stopPropagation();
+            if (gridCellsContentPortal) {
+              closeContentListbox();
+              return;
+            }
+            if (gridCellsSizePortal) {
+              gridCellsSizePortal.parentNode.removeChild(gridCellsSizePortal);
+              gridCellsSizePortal = null;
+              listEl.querySelectorAll('.grid-cells-size-toggle[aria-expanded="true"]').forEach(function (b) { b.setAttribute('aria-expanded', 'false'); });
+            }
+            var sourceMenu = document.getElementById('content-add-menu');
+            if (!sourceMenu) return;
+            var clone = sourceMenu.cloneNode(true);
+            clone.hidden = false;
+            clone.querySelectorAll('.content-add-submenu').forEach(function (s) { s.hidden = true; });
+            clone.querySelectorAll('.content-add-submenu-trigger').forEach(function (t) { t.setAttribute('aria-expanded', 'false'); });
+            clone.querySelectorAll('.content-add-submenu-wrap').forEach(function (wrap) {
+              var trigger = wrap.querySelector('.content-add-submenu-trigger');
+              var submenu = wrap.querySelector('.content-add-submenu');
+              if (!trigger || !submenu) return;
+              wrap.addEventListener('mouseenter', function () {
+                submenu.hidden = false;
+                trigger.setAttribute('aria-expanded', 'true');
+              });
+              wrap.addEventListener('mouseleave', function () {
+                submenu.hidden = true;
+                trigger.setAttribute('aria-expanded', 'false');
+              });
+            });
+            clone.addEventListener('click', function (e) {
+              var btn = e.target.closest('.content-add-option[data-type]');
+              if (!btn) return;
+              e.stopPropagation();
+              e.preventDefault();
+              var type = btn.dataset.type || 'text';
+              var role = btn.dataset.role || '';
+              var asset = btn.dataset.asset || '';
+              var cells = getGridCells().slice();
+              var c = cells[index];
+              if (c) {
+                c.type = type;
+                c.role = role;
+                c.asset = asset;
+                saveGridCells(cells);
+                contentTriggerLabel.textContent = getContentLabel(type, role, asset);
+                var thumbWrap = contentTrigger.querySelector('.grid-cells-content-trigger-thumb');
+                if (thumbWrap) {
+                  thumbWrap.innerHTML = '';
+                  thumbWrap.appendChild(createContentThumbInner(type, role, asset));
+                }
+                closeContentListbox();
+                dispatchContentChanged();
+              }
+            });
+            var portal = document.createElement('div');
+            portal.className = 'grid-cells-content-portal';
+            var rect = contentTrigger.getBoundingClientRect();
+            portal.style.position = 'fixed';
+            portal.style.left = rect.left + 'px';
+            portal.style.top = (rect.bottom + 2) + 'px';
+            portal.style.zIndex = '9999';
+            portal.style.width = '0';
+            portal.style.height = '0';
+            portal.style.overflow = 'visible';
+            portal.appendChild(clone);
+            document.body.appendChild(portal);
+            gridCellsContentPortal = portal;
+            contentTrigger.setAttribute('aria-expanded', 'true');
+          });
+          document.addEventListener('click', function closeContentListboxOnDoc(e) {
+            if (contentWrap.contains(e.target)) return;
+            if (gridCellsContentPortal && gridCellsContentPortal.contains(e.target)) return;
+            closeContentListbox();
+          });
+          removeBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var cells = getGridCells().filter(function (_, i) { return i !== index; });
+            saveGridCells(cells);
+            renderGridCellsList();
+            dispatchContentChanged();
+          });
+        });
+      }
+
+      window.renderGridCellsList = renderGridCellsList;
+
+      var gridCellsWrap = document.getElementById('grid-cells-wrap');
+      if (gridCellsWrap && !gridCellsWrap.hidden) renderGridCellsList();
+
+      addBtn.addEventListener('click', function () {
+        var maxCols = getMaxCols();
+        var maxRows = getMaxRows();
+        var cells = getGridCells();
+        cells.unshift({ id: Date.now(), colStart: 1, colEnd: Math.min(2, maxCols), rowStart: 1, rowEnd: Math.min(2, maxRows), type: 'text', role: 'title' });
+        saveGridCells(cells);
+        renderGridCellsList();
+        dispatchContentChanged();
+      });
+
+      document.addEventListener('content-changed', function () {
+        /* Do not re-render the grid cells list here: dragging slider handles would
+           collapse the size panel. List is re-rendered explicitly on add/remove/set content. */
+      });
+    })();
+  </script>
+</body>
+</html>
