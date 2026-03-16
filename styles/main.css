@@ -516,6 +516,148 @@ body.dark-ui .grid-cells-remove img {
   height: 100%;
 }
 
+/* ----- Icon component (UI + Preview) ----- */
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.icon--ui {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.icon--ui img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+}
+
+body.dark-ui .icon--ui--delete img {
+  filter: invert(1);
+}
+
+.icon--ui--back {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M10 12 L6 8 L10 4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+.icon--ui--drag {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='currentColor'%3E%3Ccircle cx='4' cy='4' r='1.2'/%3E%3Ccircle cx='8' cy='4' r='1.2'/%3E%3Ccircle cx='12' cy='4' r='1.2'/%3E%3Ccircle cx='4' cy='8' r='1.2'/%3E%3Ccircle cx='8' cy='8' r='1.2'/%3E%3Ccircle cx='12' cy='8' r='1.2'/%3E%3Ccircle cx='4' cy='12' r='1.2'/%3E%3Ccircle cx='8' cy='12' r='1.2'/%3E%3Ccircle cx='12' cy='12' r='1.2'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+.icon--ui--size svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.icon--ui--close {
+  font-size: 14px;
+  line-height: 1;
+  color: inherit;
+}
+
+.icon--ui--close::before {
+  content: "\2715";
+}
+
+.icon--ui--chevron-down {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M2 4 L6 8 L10 4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+.icon--ui--chevron-right {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M4 2 L8 6 L4 10'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+.icon--preview {
+  flex-shrink: 0;
+}
+
+/* Preview content-type icons (image, text, logo) when used as icon--preview--content-* */
+.icon--preview--content {
+  width: 28px;
+  height: 18px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+.icon--preview--content-image {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 18' fill='none' stroke='%239ca3af' stroke-width='1.2'%3E%3Crect x='2' y='2' width='24' height='14' rx='0.5' fill='rgba(156,163,175,0.12)'/%3E%3Crect x='2' y='2' width='24' height='14' rx='0.5'/%3E%3Ccircle cx='10' cy='7' r='3' fill='rgba(156,163,175,0.2)'/%3E%3Cpath d='M2 16 L8 10 L14 14 L26 4'/%3E%3C/svg%3E");
+}
+
+.icon--preview--content-text {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 18' fill='none' stroke='%239ca3af' stroke-width='1.2'%3E%3Crect x='2' y='2' width='24' height='3' rx='0.5'/%3E%3Crect x='2' y='7.5' width='20' height='2.5' rx='0.5'/%3E%3Crect x='2' y='13' width='16' height='2.5' rx='0.5'/%3E%3C/svg%3E");
+}
+
+.icon--preview--content-logo {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 18' fill='none' stroke='%239ca3af' stroke-width='1.2'%3E%3Crect x='4' y='2' width='20' height='14' rx='1'/%3E%3Cpath d='M10 6 L14 10 L10 14 L8 12 L11 10 L8 8 Z'/%3E%3Cpath d='M18 6 L14 10 L18 14 L20 12 L17 10 L20 8 Z'/%3E%3C/svg%3E");
+}
+
+/* Icon showcase (e.g. UI components page) */
+.icon-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-m);
+}
+
+.icon-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-s);
+  padding: var(--space-s);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  min-width: 80px;
+}
+
+.icon-item-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text);
+}
+
+.icon-list--preview .icon-item-icon .icon--preview {
+  width: 28px;
+  height: 18px;
+}
+
+.icon-list--preview .icon-item-icon .artboard-thumb {
+  height: 22px;
+}
+
+.icon-item-label {
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  text-align: center;
+  word-break: break-word;
+}
+
 /* Size popup (dropdown-like, close via X or click outside) */
 .grid-cells-size-popup {
   position: absolute;

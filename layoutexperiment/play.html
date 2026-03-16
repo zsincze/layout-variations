@@ -343,6 +343,7 @@
       </aside>
     </div>
   </div>
+  <script src="icon-component.js"></script>
   <script src="content-options.js"></script>
   <script src="layout-engine.js"></script>
   <script>
@@ -1040,7 +1041,7 @@
           dragHandle.className = 'grid-cells-drag-handle';
           dragHandle.setAttribute('aria-hidden', 'true');
           dragHandle.title = 'Drag to reorder';
-          dragHandle.textContent = '\u22EE\u22EE'; /* ⋮⋮ grip icon */
+          dragHandle.innerHTML = (window.IconComponent && window.IconComponent.render('ui', 'drag')) || '\u22EE\u22EE';
           var contentWrap = document.createElement('div');
           contentWrap.className = 'grid-cells-content-wrap';
           var contentTrigger = document.createElement('button');
@@ -1069,19 +1070,12 @@
           sizeToggleBtn.setAttribute('aria-label', 'Size');
           sizeToggleBtn.setAttribute('aria-haspopup', 'dialog');
           sizeToggleBtn.setAttribute('aria-expanded', 'false');
-          var sizeIcon = document.createElement('span');
-          sizeIcon.className = 'grid-cells-size-icon';
-          sizeIcon.setAttribute('aria-hidden', 'true');
-          sizeIcon.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><rect x="2" y="2" width="5" height="5" rx="0.5"/><rect x="9" y="2" width="5" height="5" rx="0.5"/><rect x="2" y="9" width="5" height="5" rx="0.5"/><rect x="9" y="9" width="5" height="5" rx="0.5"/></svg>';
-          sizeToggleBtn.appendChild(sizeIcon);
+          var sizeIconHtml = (window.IconComponent && window.IconComponent.render('ui', 'size', { className: 'grid-cells-size-icon' })) || '<span class="grid-cells-size-icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><rect x="2" y="2" width="5" height="5" rx="0.5"/><rect x="9" y="2" width="5" height="5" rx="0.5"/><rect x="2" y="9" width="5" height="5" rx="0.5"/><rect x="9" y="9" width="5" height="5" rx="0.5"/></svg></span>';
+          sizeToggleBtn.innerHTML = sizeIconHtml;
           var removeBtn = document.createElement('button');
           removeBtn.type = 'button';
           removeBtn.className = 'grid-cells-remove';
-          var removeIcon = document.createElement('img');
-          removeIcon.src = '../assets/assets-vector/icons/delete.svg';
-          removeIcon.alt = '';
-          removeIcon.setAttribute('aria-hidden', 'true');
-          removeBtn.appendChild(removeIcon);
+          removeBtn.innerHTML = (window.IconComponent && window.IconComponent.render('ui', 'delete')) || '<img src="../assets/assets-vector/icons/delete.svg" alt="" aria-hidden="true" />';
           removeBtn.setAttribute('aria-label', 'Remove cell');
           summary.appendChild(dragHandle);
           summary.appendChild(contentWrap);
