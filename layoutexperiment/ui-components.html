@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UI Components — Layout Experiment</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect fill='%23666' width='32' height='32' rx='4'/><path fill='%23fff' d='M8 8h6v6H8zm10 0h6v6h-6zm-10 10h6v6H8zm10 0h6v6h-6z'/></svg>" type="image/svg+xml" />
+  <link rel="stylesheet" href="../styles/main.css" />
+  <style>
+    .ui-components-page { max-width: 720px; margin: 0 auto; padding: var(--space-l); }
+    .ui-components-back { margin-bottom: var(--space-l); }
+    .ui-components-back a { color: var(--color-link); text-decoration: none; }
+    .ui-components-back a:hover { text-decoration: underline; }
+    .ui-components-title { margin: 0 0 var(--space-s); font-size: 1.5rem; }
+    .ui-components-intro { margin: 0 0 var(--space-xl); color: var(--color-muted); font-size: 0.9375rem; }
+    .ui-components-section { margin-bottom: var(--space-xl); }
+    .ui-components-section h2 { font-size: 1.125rem; margin: 0 0 var(--space-m); color: var(--color-fg); font-weight: 600; }
+    .ui-components-section .section-block { margin-bottom: var(--space-l); }
+    .ui-components-section .section-block:last-child { margin-bottom: 0; }
+    /* Reuse compositions styles for showcase */
+    .compositions-item { display: flex; align-items: center; justify-content: space-between; gap: var(--space-m); padding: var(--space-s) var(--space-m); margin-bottom: var(--space-xs); background: var(--color-surface-elevated); border: 1px solid var(--color-border); border-radius: var(--radius); }
+    .compositions-item-name { flex: 1; min-width: 0; font-weight: 500; }
+    .compositions-item-meta { font-size: 0.8125rem; color: var(--color-muted); margin-top: 2px; }
+    .compositions-item-actions { display: flex; gap: var(--space-s); flex-shrink: 0; }
+    .compositions-empty { padding: var(--space-xl); text-align: center; color: var(--color-muted); background: var(--color-surface-elevated); border: 1px dashed var(--color-border); border-radius: var(--radius); }
+    .compositions-error { padding: var(--space-m); background: #3a2020; color: #f88; border-radius: var(--radius); margin-bottom: var(--space-m); }
+  </style>
+</head>
+<body class="dark-ui">
+  <div class="ui-components-page">
+    <nav class="ui-components-back" aria-label="Breadcrumb">
+      <a href="compositions.html">← Back to compositions</a>
+    </nav>
+    <h1 class="ui-components-title">UI Components</h1>
+    <p class="ui-components-intro">All UI components used in the layout variations experience (editor, play, compositions). Same classes and structure as in the app.</p>
+
+    <section class="ui-components-section" aria-labelledby="h-buttons">
+      <h2 id="h-buttons">Buttons</h2>
+      <div class="section-block">
+        <p class="control-label" style="margin-bottom: var(--space-s);">Primary (index-cta)</p>
+        <button type="button" class="index-cta" style="cursor: pointer; border: 0; font: inherit;">Create new composition</button>
+      </div>
+      <div class="section-block">
+        <p class="control-label" style="margin-bottom: var(--space-s);">Secondary (grid-cells-btn)</p>
+        <button type="button" class="grid-cells-btn">Save a copy</button>
+        <button type="button" class="grid-cells-btn">Open</button>
+        <button type="button" class="grid-cells-btn">Delete</button>
+      </div>
+      <div class="section-block">
+        <p class="control-label" style="margin-bottom: var(--space-s);">Add cell (grid-cells-add-btn)</p>
+        <button type="button" class="grid-cells-add-btn">Add cell</button>
+      </div>
+    </section>
+
+    <section class="ui-components-section" aria-labelledby="h-links">
+      <h2 id="h-links">Links</h2>
+      <div class="section-block">
+        <a href="compositions.html" style="color: var(--color-link); text-decoration: none;">← Back to compositions</a>
+        <span style="color: var(--color-muted);"> (hover: underline)</span>
+      </div>
+    </section>
+
+    <section class="ui-components-section" aria-labelledby="h-toggle">
+      <h2 id="h-toggle">Toggle</h2>
+      <div class="section-block" role="group" aria-labelledby="toggle-demo-label">
+        <label class="toggle-wrap" for="toggle-demo">
+          <input type="checkbox" id="toggle-demo" class="toggle-input" checked aria-describedby="toggle-demo-label" />
+          <span id="toggle-demo-label" class="control-label toggle-label">Decorations</span>
+        </label>
+      </div>
+    </section>
+
+    <section class="ui-components-section" id="section-intent" aria-labelledby="h-intent">
+      <h2 id="h-intent">Intent dropdown</h2>
+      <div class="section-block control-intent" role="group" aria-labelledby="intent-demo-label">
+        <label id="intent-demo-label" class="control-label">Intent</label>
+        <div class="intent-custom-wrap">
+          <button type="button" class="intent-custom-trigger" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="intent-demo-label" aria-controls="intent-demo-listbox">
+            <span class="intent-custom-icon intent-icon-inform" aria-hidden="true"></span>
+            <span class="intent-custom-label">Inform</span>
+            <span class="intent-custom-chevron" aria-hidden="true">▼</span>
+          </button>
+          <ul id="intent-demo-listbox" class="intent-custom-list" role="listbox" aria-labelledby="intent-demo-label" hidden>
+            <li role="option" tabindex="-1" data-value="inform" aria-selected="true">
+              <span class="intent-option-icon intent-icon-inform" aria-hidden="true"></span>
+              <span class="intent-option-label">Inform</span>
+            </li>
+            <li role="option" tabindex="-1" data-value="compare">
+              <span class="intent-option-icon intent-icon-compare" aria-hidden="true"></span>
+              <span class="intent-option-label">Compare</span>
+            </li>
+            <li role="option" tabindex="-1" data-value="promote">
+              <span class="intent-option-icon intent-icon-promote" aria-hidden="true"></span>
+              <span class="intent-option-label">Promote</span>
+            </li>
+            <li role="option" tabindex="-1" data-value="storytell">
+              <span class="intent-option-icon intent-icon-storytell" aria-hidden="true"></span>
+              <span class="intent-option-label">Storytell</span>
+            </li>
+            <li role="option" tabindex="-1" data-value="showcase">
+              <span class="intent-option-icon intent-icon-showcase" aria-hidden="true"></span>
+              <span class="intent-option-label">Showcase</span>
+            </li>
+            <li role="option" tabindex="-1" data-value="explain">
+              <span class="intent-option-icon intent-icon-explain" aria-hidden="true"></span>
+              <span class="intent-option-label">Explain</span>
+            </li>
+            <li role="option" tabindex="-1" data-value="educate">
+              <span class="intent-option-icon intent-icon-educate" aria-hidden="true"></span>
+              <span class="intent-option-label">Educate</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="ui-components-section" id="section-artboard" aria-labelledby="h-artboard">
+      <h2 id="h-artboard">Artboard aspect dropdown</h2>
+      <div class="section-block control-artboard" role="group" aria-labelledby="artboard-demo-label">
+        <label id="artboard-demo-label" class="control-label">Artboard</label>
+        <div class="artboard-custom-wrap">
+          <button type="button" class="artboard-custom-trigger" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="artboard-demo-label" aria-controls="artboard-demo-listbox">
+            <span class="artboard-thumb artboard-thumb-portrait" aria-hidden="true"></span>
+            <span class="artboard-custom-label">Portrait</span>
+            <span class="artboard-custom-chevron" aria-hidden="true">▼</span>
+          </button>
+          <ul id="artboard-demo-listbox" class="artboard-custom-list" role="listbox" aria-labelledby="artboard-demo-label" hidden>
+            <li role="option" tabindex="-1" data-value="square" aria-selected="false">
+              <span class="artboard-thumb artboard-thumb-square" aria-hidden="true"></span>
+              <span class="artboard-option-label">Square</span>
+            </li>
+            <li role="option" tabindex="-1" data-value="portrait" aria-selected="true">
+              <span class="artboard-thumb artboard-thumb-portrait" aria-hidden="true"></span>
+              <span class="artboard-option-label">Portrait</span>
+            </li>
+            <li role="option" tabindex="-1" data-value="landscape" aria-selected="false">
+              <span class="artboard-thumb artboard-thumb-landscape" aria-hidden="true"></span>
+              <span class="artboard-option-label">Landscape</span>
+            </li>
+            <li role="option" tabindex="-1" data-value="wide-portrait" aria-selected="false">
+              <span class="artboard-thumb artboard-thumb-wide-portrait" aria-hidden="true"></span>
+              <span class="artboard-option-label">Wide portrait</span>
+            </li>
+            <li role="option" tabindex="-1" data-value="wide-landscape" aria-selected="false">
+              <span class="artboard-thumb artboard-thumb-wide-landscape" aria-hidden="true"></span>
+              <span class="artboard-option-label">Wide landscape</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="ui-components-section" aria-labelledby="h-color">
+      <h2 id="h-color">Color picker (artboard background)</h2>
+      <div class="section-block control-artboard-bg" role="group" aria-labelledby="artboard-bg-demo-label">
+        <label id="artboard-bg-demo-label" class="control-label" for="artboard-bg-demo-input">Background</label>
+        <div class="artboard-bg-wrap">
+          <input type="color" id="artboard-bg-demo-color" class="artboard-bg-swatch" value="#ffffff" aria-label="Pick color" title="Pick color" />
+          <input type="text" id="artboard-bg-demo-input" class="artboard-bg-input" value="#ffffff" placeholder="#ffffff" maxlength="9" aria-labelledby="artboard-bg-demo-label" spellcheck="false" />
+        </div>
+      </div>
+    </section>
+
+    <section class="ui-components-section" aria-labelledby="h-slider">
+      <h2 id="h-slider">Slider + number input</h2>
+      <div class="section-block control-margin" role="group" aria-labelledby="margin-demo-label">
+        <label id="margin-demo-label" class="control-label" for="margin-demo-input">Margin (px)</label>
+        <div class="slider-input-wrap">
+          <input type="range" id="margin-demo-slider" class="slider-input-range" min="0" max="100" value="20" step="1" aria-labelledby="margin-demo-label" />
+          <input type="number" id="margin-demo-input" class="margin-input slider-input-number" min="0" max="100" value="20" step="1" aria-labelledby="margin-demo-label" />
+        </div>
+      </div>
+      <div class="section-block control-css-grid-gap" role="group" aria-labelledby="gap-demo-label">
+        <label id="gap-demo-label" class="control-label" for="gap-demo-input">Gap (px)</label>
+        <div class="slider-input-wrap">
+          <input type="range" id="gap-demo-slider" class="slider-input-range" min="0" max="50" value="10" step="1" aria-labelledby="gap-demo-label" />
+          <input type="number" id="gap-demo-input" class="margin-input slider-input-number" min="0" max="50" value="10" step="1" aria-labelledby="gap-demo-label" />
+        </div>
+      </div>
+    </section>
+
+    <section class="ui-components-section" aria-labelledby="h-content-add">
+      <h2 id="h-content-add">Content add menu</h2>
+      <div class="section-block">
+        <div class="content-add-menu" role="menu">
+          <button type="button" role="menuitem" class="content-add-option content-add-option-color" data-type="color">Solid color</button>
+          <button type="button" role="menuitem" class="content-add-option" data-type="text" data-role="title">Title</button>
+          <button type="button" role="menuitem" class="content-add-option" data-type="text" data-role="headline">Headline</button>
+          <button type="button" role="menuitem" class="content-add-option content-add-submenu-trigger">Image <span class="content-add-submenu-chevron" aria-hidden="true">▸</span></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="ui-components-section" aria-labelledby="h-grid-cells">
+      <h2 id="h-grid-cells">Grid cells list (one item)</h2>
+      <div class="section-block grid-cells-wrap">
+        <h3 class="grid-cells-heading">Grid cells</h3>
+        <ul class="grid-cells-list" aria-label="Content areas in grid">
+          <li class="grid-cells-item">
+            <div class="grid-cells-item-summary">
+              <span class="grid-cells-drag-handle" aria-hidden="true" title="Drag to reorder">⋮⋮</span>
+              <div class="grid-cells-content-wrap">
+                <button type="button" class="grid-cells-content-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Content type">
+                  <span class="grid-cells-content-trigger-thumb grid-cells-content-trigger-thumb-color" style="background-color: #3b82f6;"></span>
+                  <span class="grid-cells-content-trigger-label">Solid color</span>
+                  <span class="grid-cells-content-trigger-chevron" aria-hidden="true">▼</span>
+                </button>
+              </div>
+              <button type="button" class="grid-cells-size-toggle" aria-label="Size" aria-haspopup="dialog" aria-expanded="false">
+                <span class="grid-cells-size-icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><rect x="2" y="2" width="5" height="5" rx="0.5"/><rect x="9" y="2" width="5" height="5" rx="0.5"/><rect x="2" y="9" width="5" height="5" rx="0.5"/><rect x="9" y="9" width="5" height="5" rx="0.5"/></svg></span>
+              </button>
+              <button type="button" class="grid-cells-remove" aria-label="Remove cell">
+                <img src="../assets/assets-vector/icons/delete.svg" alt="" aria-hidden="true" />
+              </button>
+            </div>
+          </li>
+        </ul>
+        <button type="button" class="grid-cells-add-btn">Add cell</button>
+      </div>
+    </section>
+
+    <section class="ui-components-section" aria-labelledby="h-align">
+      <h2 id="h-align">Alignment button group (from size popup)</h2>
+      <div class="section-block">
+        <div class="grid-cells-align-group">
+          <span class="grid-cells-align-label">Horizontal</span>
+          <div class="grid-cells-align-btns">
+            <button type="button" class="grid-cells-align-btn is-selected" data-value="left">Left</button>
+            <button type="button" class="grid-cells-align-btn" data-value="center">Centre</button>
+            <button type="button" class="grid-cells-align-btn" data-value="right">Right</button>
+          </div>
+        </div>
+        <div class="grid-cells-align-group" style="margin-top: var(--space-m);">
+          <span class="grid-cells-align-label">Vertical</span>
+          <div class="grid-cells-align-btns">
+            <button type="button" class="grid-cells-align-btn is-selected" data-value="top">Top</button>
+            <button type="button" class="grid-cells-align-btn" data-value="center">Centre</button>
+            <button type="button" class="grid-cells-align-btn" data-value="bottom">Bottom</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="ui-components-section" aria-labelledby="h-cell-color">
+      <h2 id="h-cell-color">Cell text/background color (from size popup)</h2>
+      <div class="section-block">
+        <div class="grid-cells-align-group">
+          <span class="grid-cells-align-label">Text color</span>
+          <div class="grid-cells-text-color-wrap">
+            <input type="color" class="grid-cells-text-color-swatch" value="#1a1a1a" aria-label="Pick text color" />
+            <input type="text" class="grid-cells-text-color-input" value="#1a1a1a" placeholder="#1a1a1a" maxlength="9" aria-label="Text color hex" spellcheck="false" />
+          </div>
+        </div>
+        <div class="grid-cells-align-group" style="margin-top: var(--space-m);">
+          <span class="grid-cells-align-label">Background</span>
+          <div class="grid-cells-text-color-wrap">
+            <input type="color" class="grid-cells-text-color-swatch" value="#f3f4f6" aria-label="Pick background color" />
+            <input type="text" class="grid-cells-text-color-input" value="#f3f4f6" placeholder="#ffffff" maxlength="9" aria-label="Background hex" spellcheck="false" />
+            <button type="button" class="grid-cells-bg-none-btn">None</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="ui-components-section" aria-labelledby="h-compositions">
+      <h2 id="h-compositions">Compositions list item</h2>
+      <div class="section-block">
+        <ul class="compositions-list" aria-label="Saved compositions" style="list-style: none; margin: 0; padding: 0;">
+          <li class="compositions-item">
+            <div>
+              <span class="compositions-item-name">My layout</span>
+              <div class="compositions-item-meta">Updated 3/6/25, 2:30 PM</div>
+            </div>
+            <div class="compositions-item-actions">
+              <button type="button" class="grid-cells-btn">Open</button>
+              <button type="button" class="grid-cells-btn">Delete</button>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="ui-components-section" aria-labelledby="h-empty-error">
+      <h2 id="h-empty-error">Empty state & error</h2>
+      <div class="section-block">
+        <p class="control-label" style="margin-bottom: var(--space-s);">Empty state (compositions-empty)</p>
+        <div class="compositions-empty">No compositions yet. Create one to get started.</div>
+      </div>
+      <div class="section-block" style="margin-top: var(--space-l);">
+        <p class="control-label" style="margin-bottom: var(--space-s);">Error message (compositions-error)</p>
+        <div class="compositions-error">Failed to load compositions. Check the server and try again.</div>
+      </div>
+    </section>
+
+    <section class="ui-components-section" aria-labelledby="h-labels">
+      <h2 id="h-labels">Labels & headings</h2>
+      <div class="section-block">
+        <p class="control-label">Control label (control-label)</p>
+      </div>
+      <div class="section-block">
+        <h3 class="grid-cells-heading">Section heading (grid-cells-heading)</h3>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      var intentTrigger = document.querySelector('#section-intent [aria-controls="intent-demo-listbox"]');
+      var intentListbox = document.getElementById('intent-demo-listbox');
+      if (intentTrigger && intentListbox) {
+        intentTrigger.addEventListener('click', function () {
+          var open = intentListbox.getAttribute('hidden') == null;
+          intentListbox.toggleAttribute('hidden', open);
+          intentTrigger.setAttribute('aria-expanded', !open);
+        });
+      }
+      var artboardTrigger = document.querySelector('#section-artboard [aria-controls="artboard-demo-listbox"]');
+      var artboardListbox = document.getElementById('artboard-demo-listbox');
+      if (artboardTrigger && artboardListbox) {
+        artboardTrigger.addEventListener('click', function () {
+          var open = artboardListbox.getAttribute('hidden') == null;
+          artboardListbox.toggleAttribute('hidden', open);
+          artboardTrigger.setAttribute('aria-expanded', !open);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

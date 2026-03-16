@@ -29,6 +29,12 @@ app.get('/layoutexperiment/editor', (req, res) => {
 app.get('/layoutexperiment/editor/', (req, res) => {
   res.sendFile(path.join(ROOT, 'layoutexperiment', 'editor.html'));
 });
+app.get('/layoutexperiment/ui-components', (req, res) => {
+  res.sendFile(path.join(ROOT, 'layoutexperiment', 'ui-components.html'));
+});
+app.get('/layoutexperiment/ui-components/', (req, res) => {
+  res.sendFile(path.join(ROOT, 'layoutexperiment', 'ui-components.html'));
+});
 
 function defaultState() {
   return { gridCells: [], content: [], intent: 'inform' };
