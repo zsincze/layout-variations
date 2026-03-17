@@ -12,6 +12,7 @@
     'add',
     'delete',
     'back',
+    'edit',
     'drag',
     'size',
     'options',
@@ -57,6 +58,14 @@
       if (name === 'delete') {
         var src = (opts.assetBase ? opts.assetBase.replace(/\/?$/, '/') : ASSET_BASE) + 'delete.svg';
         return '<span class="' + uiClass + '"' + aria + '><img src="' + src + '" alt="" /></span>';
+      }
+      if (name === 'back') {
+        var backSrc = (opts.assetBase ? opts.assetBase.replace(/\/?$/, '/') : ASSET_BASE) + 'back.svg';
+        return '<span class="' + uiClass + '"' + aria + '><img src="' + backSrc + '" alt="" /></span>';
+      }
+      if (name === 'edit') {
+        var editSrc = (opts.assetBase ? opts.assetBase.replace(/\/?$/, '/') : ASSET_BASE) + 'edit.svg';
+        return '<span class="' + uiClass + '"' + aria + '><img src="' + editSrc + '" alt="" /></span>';
       }
       if (name === 'drag') {
         var dragSrc = (opts.assetBase ? opts.assetBase.replace(/\/?$/, '/') : ASSET_BASE) + 'drag.svg';

@@ -14,10 +14,70 @@
   <script>
     (function () {
       var STATE_KEY = 'layout-experiment-state';
+      var LAST_SAVED_KEY = 'layout-experiment-play-last-saved';
       var API = '/api/compositions';
       function defaultState() {
         return { gridCells: [], content: [], intent: 'inform' };
       }
+      var origSetItem = localStorage.setItem.bind(localStorage);
+      function formatPlayLastSaved(ts) {
+        if (ts == null || ts === '' || isNaN(ts)) return 'Not saved yet';
+        var d = new Date(Number(ts));
+        if (isNaN(d.getTime())) return 'Not saved yet';
+        return (
+          'Last saved ' +
+          d.toLocaleString(undefined, {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit'
+          })
+        );
+      }
+      window.__playUpdateLastSavedDisplay = function (ts) {
+        var el = document.getElementById('play-last-saved');
+        if (el) el.textContent = formatPlayLastSaved(ts);
+      };
+      window.__playSaveNow = function () {
+        var ts = Date.now();
+        var stateJson = localStorage.getItem(STATE_KEY);
+        try {
+          origSetItem(LAST_SAVED_KEY, String(ts));
+        } catch (e) {}
+        window.__playUpdateLastSavedDisplay(ts);
+        if (window.__currentCompositionId && stateJson) {
+          try {
+            fetch(API + '/' + encodeURIComponent(window.__currentCompositionId), {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ state: JSON.parse(stateJson) })
+            }).catch(function () {});
+          } catch (e) {}
+        }
+      };
+      localStorage.setItem = function (key, value) {
+        origSetItem(key, value);
+        if (key !== STATE_KEY) return;
+        var ts = Date.now();
+        try {
+          origSetItem(LAST_SAVED_KEY, String(ts));
+        } catch (e) {}
+        window.__playUpdateLastSavedDisplay(ts);
+        if (window.__currentCompositionId) {
+          var stateObj;
+          try {
+            stateObj = typeof value === 'string' ? JSON.parse(value) : value;
+          } catch (e) {
+            return;
+          }
+          fetch(API + '/' + encodeURIComponent(window.__currentCompositionId), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ state: stateObj })
+          }).catch(function () {});
+        }
+      };
       var id = null;
       if (window.location.hash) {
         var hash = window.location.hash.slice(1);
@@ -37,9 +97,24 @@
   </script>
   <div class="layoutexperiment-page">
     <!-- Back navigation -->
-    <nav class="layoutexperiment-back" aria-label="Breadcrumb">
-      <a href="/layoutexperiment/compositions.html">← Back to compositions</a>
-      <button type="button" id="play-save-copy-btn" class="btn btn--m" style="margin-left: 0.75rem;">Save a copy</button>
+    <nav class="layoutexperiment-back layoutexperiment-editor-topbar" aria-label="Breadcrumb">
+      <div class="layoutexperiment-topbar-left">
+        <a href="/layoutexperiment/compositions.html" class="btn btn--m btn--icon-label layoutexperiment-back-link" aria-label="Back to compositions">
+          <span class="btn__icon"><span class="icon icon--ui icon--ui--back"><img src="../assets/assets-vector/icons/back.svg" alt="" aria-hidden="true" /></span></span>
+          <span class="btn__label">Back</span>
+        </a>
+        <button type="button" id="play-save-btn" class="btn btn--m">Save</button>
+        <span class="layoutexperiment-last-saved" id="play-last-saved" aria-live="polite"></span>
+      </div>
+      <div class="layoutexperiment-topbar-center" id="play-composition-center" hidden>
+        <span class="layoutexperiment-composition-name" id="play-composition-name" title=""></span>
+      </div>
+      <div class="layoutexperiment-topbar-right">
+        <button type="button" id="play-rename-btn" class="btn btn--m btn--muted btn--icon-only" hidden aria-label="Rename composition">
+          <span class="btn__icon"><span class="icon icon--ui icon--ui--edit"><img src="../assets/assets-vector/icons/edit.svg" alt="" aria-hidden="true" /></span></span>
+        </button>
+        <button type="button" id="play-save-copy-btn" class="btn btn--m btn--muted">Save a copy</button>
+      </div>
     </nav>
 
     <!-- Main content: first information architecture -->
@@ -1467,25 +1542,15 @@
       var API = '/api/compositions';
       var id = window.__pendingCompositionId;
       if (!id) {
-        id = sessionStorage.getItem('compositionId');
-        if (id) {
-          sessionStorage.removeItem('compositionId');
-          window.__currentCompositionId = id;
-          var origSetItem = localStorage.setItem.bind(localStorage);
-          localStorage.setItem = function (key, value) {
-            origSetItem(key, value);
-            if (key === STATE_KEY && window.__currentCompositionId) {
-              fetch(API + '/' + encodeURIComponent(window.__currentCompositionId), {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ state: typeof value === 'string' ? JSON.parse(value) : value })
-              }).catch(function () {});
-            }
-          };
+        try {
+          id = sessionStorage.getItem('compositionId');
+        } catch (e) {
+          id = null;
         }
+        if (id) window.__currentCompositionId = id;
         return;
       }
-      fetch(API + '/' + encodeURIComponent(id))
+      fetch(API + '/' + encodeURIComponent(id), { credentials: 'same-origin' })
         .then(function (r) {
           if (!r.ok) throw new Error(r.status + ' ' + r.statusText);
           return r.json();
@@ -1494,10 +1559,146 @@
           try {
             localStorage.setItem(STATE_KEY, JSON.stringify(comp.state || {}));
           } catch (e) {}
-          sessionStorage.setItem('compositionId', id);
+          try {
+            sessionStorage.setItem('compositionId', id);
+            sessionStorage.setItem('compositionName', comp.name || 'Untitled');
+          } catch (e) {}
           window.location.replace(window.location.pathname + window.location.search);
         })
         .catch(function () {});
+    })();
+  </script>
+  <script>
+    (function () {
+      var API = '/api/compositions';
+      function resolvePlayCompositionId() {
+        var h = (window.location.hash || '').replace(/^#/, '').trim();
+        if (h) {
+          if (h.indexOf('id=') === 0) {
+            try {
+              return decodeURIComponent(h.slice(3));
+            } catch (e) {
+              return h.slice(3);
+            }
+          }
+          try {
+            return decodeURIComponent(h);
+          } catch (e) {
+            return h;
+          }
+        }
+        if (window.__currentCompositionId) return window.__currentCompositionId;
+        try {
+          var sid = sessionStorage.getItem('compositionId');
+          if (sid) return sid;
+        } catch (e) {}
+        return null;
+      }
+      function initPlayCompositionChrome() {
+        if (!document.getElementById('play-composition-name')) return;
+        var id = resolvePlayCompositionId();
+        if (!id) return;
+        window.__currentCompositionId = id;
+        try {
+          sessionStorage.setItem('compositionId', id);
+        } catch (e) {}
+        var topbar = document.querySelector('.layoutexperiment-editor-topbar');
+        function applyPlayName(name) {
+          if (topbar) topbar.classList.add('layoutexperiment-topbar--three-col');
+          var block = document.getElementById('play-composition-center');
+          var nameEl = document.getElementById('play-composition-name');
+          if (block) {
+            block.removeAttribute('hidden');
+            block.hidden = false;
+          }
+          var display = name || 'Untitled';
+          if (nameEl) {
+            nameEl.textContent = display;
+            nameEl.setAttribute('title', display);
+          }
+          try {
+            sessionStorage.setItem('compositionName', display);
+          } catch (e) {}
+          document.title = display + ' — Layout Experiment';
+        }
+        var renameBtn = document.getElementById('play-rename-btn');
+        function wirePlayRename() {
+          if (!renameBtn || renameBtn.dataset.renameWired === '1') return;
+          renameBtn.dataset.renameWired = '1';
+          renameBtn.removeAttribute('hidden');
+          renameBtn.hidden = false;
+          renameBtn.addEventListener('click', function (ev) {
+            ev.preventDefault();
+            var nameEl = document.getElementById('play-composition-name');
+            var cur = nameEl ? nameEl.textContent.trim() : 'Untitled';
+            var n = window.prompt('Composition name', cur);
+            if (n === null) return;
+            n = (n || '').trim() || 'Untitled';
+            fetch(API + '/' + encodeURIComponent(id), {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name: n }),
+              credentials: 'same-origin'
+            })
+              .then(function (r) {
+                if (!r.ok) return r.json().then(function (j) { throw new Error(j.error || 'Rename failed'); });
+                return r.json();
+              })
+              .then(function () {
+                applyPlayName(n);
+              })
+              .catch(function () {
+                window.alert('Could not rename. Check your connection and try again.');
+              });
+          });
+        }
+        fetch(API + '/' + encodeURIComponent(id), { credentials: 'same-origin' })
+          .then(function (r) {
+            if (!r.ok) throw new Error('fetch');
+            return r.json();
+          })
+          .then(function (comp) {
+            applyPlayName(comp.name);
+            wirePlayRename();
+          })
+          .catch(function () {
+            var fallback = null;
+            try {
+              fallback = sessionStorage.getItem('compositionName');
+            } catch (e) {}
+            if (fallback) {
+              applyPlayName(fallback);
+              wirePlayRename();
+            }
+          });
+      }
+      function ready(fn) {
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
+        else fn();
+      }
+      ready(initPlayCompositionChrome);
+    })();
+  </script>
+  <script>
+    (function () {
+      var raw = localStorage.getItem('layout-experiment-play-last-saved');
+      var ts = raw ? parseInt(raw, 10) : NaN;
+      if (typeof window.__playUpdateLastSavedDisplay === 'function') {
+        window.__playUpdateLastSavedDisplay(!isNaN(ts) ? ts : null);
+      }
+      var saveBtn = document.getElementById('play-save-btn');
+      if (saveBtn) {
+        saveBtn.addEventListener('click', function () {
+          if (typeof window.__playSaveNow === 'function') window.__playSaveNow();
+          var label = 'Save';
+          saveBtn.textContent = 'Saved';
+          saveBtn.disabled = true;
+          setTimeout(function () {
+            saveBtn.textContent = label;
+            saveBtn.disabled = false;
+          }, 1000);
+        });
+      }
     })();
   </script>
   <script>

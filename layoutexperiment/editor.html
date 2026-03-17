@@ -70,6 +70,69 @@
         localStorage.setItem(STATE_KEY, JSON.stringify(comp.state || {}));
       } catch (e) {}
       window.__currentCompositionId = id;
+      window.__editorCompositionName =
+        (comp.name != null && String(comp.name).trim() !== '') ? String(comp.name).trim() : 'Untitled';
+      window.__editorRenameComposition = function () {
+        var n = window.prompt('Composition name', window.__editorCompositionName || 'Untitled');
+        if (n === null) return;
+        n = (n || '').trim() || 'Untitled';
+        var list = getCompositions();
+        var c = list.filter(function (x) { return x.id === id; })[0];
+        if (!c) return;
+        c.name = n;
+        saveCompositions(list);
+        window.__editorCompositionName = n;
+        var el = document.getElementById('editor-composition-name');
+        if (el) {
+          el.textContent = n;
+          el.setAttribute('title', n);
+        }
+        document.title = n + ' — Layout Experiment';
+      };
+      window.__editorGetCompositionUpdatedAt = function () {
+        try {
+          var c = getCompositions().filter(function (x) { return x.id === id; })[0];
+          return c && c.updatedAt ? c.updatedAt : null;
+        } catch (e) {
+          return null;
+        }
+      };
+      window.__editorPersistComposition = function () {
+        var cid = window.__currentCompositionId;
+        if (!cid) return null;
+        var list = getCompositions();
+        var c = list.filter(function (x) { return x.id === cid; })[0];
+        if (!c) return null;
+        try {
+          c.state = JSON.parse(localStorage.getItem(STATE_KEY) || '{}');
+        } catch (e) {
+          c.state = {};
+        }
+        c.updatedAt = Date.now();
+        saveCompositions(list);
+        return c.updatedAt;
+      };
+      function formatEditorLastSaved(ts) {
+        if (ts == null || ts === '') return 'Not saved yet';
+        var d = new Date(ts);
+        if (isNaN(d.getTime())) return 'Not saved yet';
+        return (
+          'Last saved ' +
+          d.toLocaleString(undefined, {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit'
+          })
+        );
+      }
+      window.__editorLastSavedTs = comp.updatedAt;
+      window.__editorUpdateLastSavedDisplay = function (ts) {
+        window.__editorLastSavedTs = ts;
+        var el = document.getElementById('editor-last-saved');
+        if (el) el.textContent = formatEditorLastSaved(ts);
+      };
       var origSetItem = localStorage.setItem.bind(localStorage);
       localStorage.setItem = function (key, value) {
         origSetItem(key, value);
@@ -81,6 +144,7 @@
               c.state = typeof value === 'string' ? JSON.parse(value) : value;
               c.updatedAt = Date.now();
               saveCompositions(list);
+              window.__editorUpdateLastSavedDisplay(c.updatedAt);
             } catch (err) {}
           }
         }
@@ -89,8 +153,23 @@
   </script>
   <div class="layoutexperiment-page">
     <!-- Back navigation -->
-    <nav class="layoutexperiment-back" aria-label="Breadcrumb">
-      <a href="/layoutexperiment/compositions.html">← Back to compositions</a>
+    <nav class="layoutexperiment-back layoutexperiment-editor-topbar layoutexperiment-topbar--three-col" aria-label="Breadcrumb">
+      <div class="layoutexperiment-topbar-left">
+        <a href="/layoutexperiment/compositions.html" class="btn btn--m btn--icon-label layoutexperiment-back-link" aria-label="Back to compositions">
+          <span class="btn__icon"><span class="icon icon--ui icon--ui--back"><img src="../assets/assets-vector/icons/back.svg" alt="" aria-hidden="true" /></span></span>
+          <span class="btn__label">Back</span>
+        </a>
+        <button type="button" id="editor-save-btn" class="btn btn--m">Save</button>
+        <span class="layoutexperiment-last-saved" id="editor-last-saved" aria-live="polite"></span>
+      </div>
+      <div class="layoutexperiment-topbar-center">
+        <span class="layoutexperiment-composition-name" id="editor-composition-name" title=""></span>
+      </div>
+      <div class="layoutexperiment-topbar-right">
+        <button type="button" id="editor-rename-btn" class="btn btn--m btn--muted btn--icon-only" aria-label="Rename composition">
+          <span class="btn__icon"><span class="icon icon--ui icon--ui--edit"><img src="../assets/assets-vector/icons/edit.svg" alt="" aria-hidden="true" /></span></span>
+        </button>
+      </div>
     </nav>
 
     <!-- Main content: first information architecture -->
@@ -1510,6 +1589,50 @@
         /* Do not re-render the grid cells list here: dragging slider handles would
            collapse the size panel. List is re-rendered explicitly on add/remove/set content. */
       });
+    })();
+  </script>
+  <script>
+    (function () {
+      function editorTopbarReady(fn) {
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
+        else fn();
+      }
+      editorTopbarReady(function () {
+        var nameEl = document.getElementById('editor-composition-name');
+        if (nameEl && window.__editorCompositionName != null) {
+          var disp = String(window.__editorCompositionName);
+          nameEl.textContent = disp;
+          nameEl.setAttribute('title', disp);
+          document.title = disp + ' — Layout Experiment';
+        }
+        var renameBtn = document.getElementById('editor-rename-btn');
+        if (renameBtn && typeof window.__editorRenameComposition === 'function') {
+          renameBtn.addEventListener('click', function (ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            window.__editorRenameComposition();
+          });
+        }
+      });
+      if (typeof window.__editorUpdateLastSavedDisplay === 'function') {
+        window.__editorUpdateLastSavedDisplay(window.__editorLastSavedTs);
+      }
+      var btn = document.getElementById('editor-save-btn');
+      if (btn) {
+        btn.addEventListener('click', function () {
+          var nts = window.__editorPersistComposition && window.__editorPersistComposition();
+          if (nts != null && typeof window.__editorUpdateLastSavedDisplay === 'function') {
+            window.__editorUpdateLastSavedDisplay(nts);
+          }
+          var label = 'Save';
+          btn.textContent = 'Saved';
+          btn.disabled = true;
+          setTimeout(function () {
+            btn.textContent = label;
+            btn.disabled = false;
+          }, 1000);
+        });
+      }
     })();
   </script>
 </body>

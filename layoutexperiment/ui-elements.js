@@ -175,7 +175,9 @@
       headingId: 'h-links',
       title: 'Links',
       html:
-        '<div class="section-block ui-component-outline"><a href="compositions.html" style="color: var(--color-link); text-decoration: none;">← Back to compositions</a></div>'
+        '<div class="section-block ui-component-outline"><a href="compositions.html" class="btn btn--m btn--icon-label layoutexperiment-back-link" aria-label="Back to compositions">' +
+            '<span class="btn__icon"><span class="icon icon--ui icon--ui--back"><img src="../assets/assets-vector/icons/back.svg" alt="" aria-hidden="true" /></span></span>' +
+            '<span class="btn__label">Back</span></a></div>'
     },
     {
       sectionId: 'section-icons-ui',
