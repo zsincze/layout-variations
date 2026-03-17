@@ -61,8 +61,11 @@
   }
 
   function getIntent() {
-    if (!intentSelect) return 'inform';
-    return intentSelect.getAttribute('data-value') || intentSelect.value || 'inform';
+    if (intentSelect) return intentSelect.getAttribute('data-value') || intentSelect.value || 'inform';
+    try {
+      var state = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+      return state.intent || 'inform';
+    } catch (e) { return 'inform'; }
   }
 
   function getGridOption() {
@@ -315,6 +318,10 @@
           blockEl.style.backgroundColor = cell.backgroundColor;
         } else if (block.type === 'color') {
           blockEl.style.backgroundColor = '#cccccc';
+        }
+        var rotationDeg = cell.rotation != null ? Number(cell.rotation) : 0;
+        if (rotationDeg !== 0) {
+          blockEl.style.transform = 'rotate(' + rotationDeg + 'deg)';
         }
         cellEl.appendChild(blockEl);
         wrapper.appendChild(cellEl);

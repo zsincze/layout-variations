@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>UI Components — Layout Experiment</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect fill='%23666' width='32' height='32' rx='4'/><path fill='%23fff' d='M8 8h6v6H8zm10 0h6v6h-6zm-10 10h6v6H8zm10 0h6v6h-6z'/></svg>" type="image/svg+xml" />
   <link rel="stylesheet" href="../styles/main.css" />
   <style>
@@ -17,13 +20,26 @@
     .ui-components-section h2 { font-size: 1.125rem; margin: 0 0 var(--space-m); color: var(--color-fg); font-weight: 600; }
     .ui-components-section .section-block { margin-bottom: var(--space-l); }
     .ui-components-section .section-block:last-child { margin-bottom: 0; }
-    /* Reuse compositions styles for showcase */
+    .ui-components-outline-toggle { margin-bottom: var(--space-xl); }
+    .ui-component-outline { border: 1px solid cyan; }
+    body.outlines-off .ui-component-outline { border: none; }
+    .ui-components-page .icon-item { background: transparent; padding: var(--space-s); min-width: auto; }
+    .ui-components-page .icon-item-label { display: none; }
+    .ui-components-page .icon-showcase .icon-list { background: transparent; }
+    /* Reuse compositions styles for showcase (no extra background on page) */
     .compositions-item { display: flex; align-items: center; justify-content: space-between; gap: var(--space-m); padding: var(--space-s) var(--space-m); margin-bottom: var(--space-xs); background: var(--color-surface-elevated); border: 1px solid var(--color-border); border-radius: var(--radius); }
     .compositions-item-name { flex: 1; min-width: 0; font-weight: 500; }
     .compositions-item-meta { font-size: 0.8125rem; color: var(--color-muted); margin-top: 2px; }
     .compositions-item-actions { display: flex; gap: var(--space-s); flex-shrink: 0; }
     .compositions-empty { padding: var(--space-xl); text-align: center; color: var(--color-muted); background: var(--color-surface-elevated); border: 1px dashed var(--color-border); border-radius: var(--radius); }
     .compositions-error { padding: var(--space-m); background: #3a2020; color: #f88; border-radius: var(--radius); margin-bottom: var(--space-m); }
+    /* Gray variables table */
+    .gray-var-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .gray-var-table th, .gray-var-table td { padding: var(--space-s) var(--space-m); text-align: left; border: 1px solid var(--color-border); }
+    .gray-var-table th { background: var(--color-surface); font-weight: 600; color: var(--color-text); }
+    .gray-var-table td { background: var(--color-surface-elevated); color: var(--color-text); }
+    .gray-var-name code, .gray-var-hex code { font-size: 0.8125rem; }
+    .gray-var-swatch { display: inline-block; width: 2.5rem; height: 1.25rem; border-radius: 2px; border: 1px solid rgba(255,255,255,0.15); }
   </style>
 </head>
 <body class="dark-ui">
@@ -33,6 +49,13 @@
     </nav>
     <h1 class="ui-components-title">UI Components</h1>
     <p class="ui-components-intro">All UI components used in the layout variations experience (editor, play, compositions). Same classes and structure as in the app. Rendered from <code>ui-elements.js</code>.</p>
+
+    <div class="ui-components-outline-toggle" role="group" aria-labelledby="outline-toggle-label">
+      <label class="toggle-wrap" for="outline-toggle">
+        <input type="checkbox" id="outline-toggle" class="toggle-input" checked aria-describedby="outline-toggle-label" />
+        <span id="outline-toggle-label" class="toggle-label">Show component outlines</span>
+      </label>
+    </div>
 
     <div id="ui-components-sections"></div>
   </div>
@@ -59,6 +82,22 @@
         var div = document.createElement('div');
         div.textContent = s;
         return div.innerHTML;
+      }
+
+      // Outline toggle: persist in localStorage
+      var outlineToggle = document.getElementById('outline-toggle');
+      var outlineStorageKey = 'ui-components-outlines';
+      if (outlineToggle) {
+        var stored = localStorage.getItem(outlineStorageKey);
+        if (stored !== null) {
+          outlineToggle.checked = stored === 'on';
+          document.body.classList.toggle('outlines-off', stored !== 'on');
+        }
+        outlineToggle.addEventListener('change', function () {
+          var show = outlineToggle.checked;
+          document.body.classList.toggle('outlines-off', !show);
+          localStorage.setItem(outlineStorageKey, show ? 'on' : 'off');
+        });
       }
 
       // Dropdown behavior for intent and artboard

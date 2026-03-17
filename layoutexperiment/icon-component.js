@@ -9,10 +9,12 @@
   var deleteSvgUrl = ASSET_BASE + 'delete.svg';
 
   var UI_ICONS = [
+    'add',
     'delete',
     'back',
     'drag',
     'size',
+    'options',
     'close',
     'chevron-down',
     'chevron-right'
@@ -48,12 +50,28 @@
 
     if (type === 'ui') {
       var uiClass = 'icon icon--ui icon--ui--' + name + extraClass;
+      if (name === 'add') {
+        var addSrc = (opts.assetBase ? opts.assetBase.replace(/\/?$/, '/') : ASSET_BASE) + 'add.svg';
+        return '<span class="' + uiClass + '"' + aria + '><img src="' + addSrc + '" alt="" /></span>';
+      }
       if (name === 'delete') {
         var src = (opts.assetBase ? opts.assetBase.replace(/\/?$/, '/') : ASSET_BASE) + 'delete.svg';
         return '<span class="' + uiClass + '"' + aria + '><img src="' + src + '" alt="" /></span>';
       }
+      if (name === 'drag') {
+        var dragSrc = (opts.assetBase ? opts.assetBase.replace(/\/?$/, '/') : ASSET_BASE) + 'drag.svg';
+        return '<span class="' + uiClass + '"' + aria + '><img src="' + dragSrc + '" alt="" /></span>';
+      }
+      if (name === 'options') {
+        var optionsSrc = (opts.assetBase ? opts.assetBase.replace(/\/?$/, '/') : ASSET_BASE) + 'options.svg';
+        return '<span class="' + uiClass + '"' + aria + '><img src="' + optionsSrc + '" alt="" /></span>';
+      }
       if (name === 'size') {
         return '<span class="' + uiClass + '"' + aria + '>' + SIZE_ICON_SVG + '</span>';
+      }
+      if (name === 'chevron-down') {
+        var chevronSrc = (opts.assetBase ? opts.assetBase.replace(/\/?$/, '/') : ASSET_BASE) + 'chevron-down.svg';
+        return '<span class="' + uiClass + '"' + aria + '><img src="' + chevronSrc + '" alt="" /></span>';
       }
       return '<span class="' + uiClass + '"' + aria + '></span>';
     }

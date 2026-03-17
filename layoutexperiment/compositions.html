@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Compositions — Layout Experiment</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect fill='%23666' width='32' height='32' rx='4'/><path fill='%23fff' d='M8 8h6v6H8zm10 0h6v6h-6zm-10 10h6v6H8zm10 0h6v6h-6z'/></svg>" type="image/svg+xml" />
   <link rel="stylesheet" href="../styles/main.css" />
   <style>
@@ -30,9 +33,9 @@
     </nav>
     <h1 class="compositions-title">Compositions</h1>
     <p class="compositions-tagline" style="margin: 0 0 var(--space-l); color: var(--color-muted); font-size: 0.9375rem;">Create a new layout or open an existing one. Edits are saved automatically.</p>
-    <div class="compositions-actions">
-      <button type="button" id="compositions-new-btn" class="index-cta" style="cursor: pointer; border: 0; font: inherit;">Create new composition</button>
-      <a href="ui-components.html" class="grid-cells-btn" style="margin-left: 0.5rem; display: inline-block; text-decoration: none; color: inherit;">UI components</a>
+    <div class="compositions-actions btn-row">
+      <button type="button" id="compositions-new-btn" class="btn btn--m">Create new composition</button>
+      <a href="ui-components.html" class="btn btn--m btn--muted">UI components</a>
     </div>
     <div id="compositions-error" class="compositions-error" style="display: none;"></div>
     <ul class="compositions-list" id="compositions-list" aria-label="Saved compositions"></ul>
@@ -102,12 +105,11 @@
           openBtn.addEventListener('click', function (ev) {
             console.log('[Compositions] Open clicked', c.id, c.name, '->', editorUrl(c.id));
           });
-          openBtn.className = 'grid-cells-btn';
-          openBtn.style.cssText = 'display: inline-block; text-decoration: none; color: inherit;';
+          openBtn.className = 'btn btn--s btn--muted';
           var deleteBtn = document.createElement('button');
           deleteBtn.type = 'button';
           deleteBtn.textContent = 'Delete';
-          deleteBtn.className = 'grid-cells-btn';
+          deleteBtn.className = 'btn btn--s btn--muted';
           deleteBtn.setAttribute('aria-label', 'Delete ' + (c.name || 'composition'));
           deleteBtn.addEventListener('click', function () {
             if (!confirm("Delete \"" + (c.name || 'Untitled') + "\"? This cannot be undone.")) return;

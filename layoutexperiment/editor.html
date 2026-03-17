@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Layout Experiment — Designer Playground</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect fill='%23666' width='32' height='32' rx='4'/><path fill='%23fff' d='M8 8h6v6H8zm10 0h6v6h-6zm-10 10h6v6H8zm10 0h6v6h-6z'/></svg>" type="image/svg+xml" />
   <link rel="stylesheet" href="../styles/main.css" />
 </head>
@@ -97,63 +100,22 @@
         <div class="layoutexperiment-panels">
           <div class="layoutexperiment-panel layoutexperiment-panel-layout">
             <section class="layoutexperiment-section" aria-labelledby="layout-controls-heading">
-              <h2 id="layout-controls-heading">Layout controls</h2>
-
-          <div class="control-decorations" role="group" aria-labelledby="decorations-label">
-            <label class="toggle-wrap" for="toggle-decorations">
-              <input type="checkbox" id="toggle-decorations" class="toggle-input" checked aria-describedby="decorations-label" />
-              <span id="decorations-label" class="control-label toggle-label">Decorations</span>
-            </label>
-          </div>
-
-          <div class="control-intent" role="group" aria-labelledby="intent-label">
-            <label id="intent-label" class="control-label">Intent</label>
-            <div class="intent-custom-wrap">
-              <button type="button" id="intent-select" class="intent-custom-trigger" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="intent-label" aria-controls="intent-listbox">
-                <span class="intent-custom-icon intent-icon-inform" id="intent-current-icon" aria-hidden="true"></span>
-                <span class="intent-custom-label" id="intent-current-label">Inform</span>
-                <span class="intent-custom-chevron" aria-hidden="true">▼</span>
-              </button>
-              <ul id="intent-listbox" class="intent-custom-list" role="listbox" aria-labelledby="intent-label" hidden>
-                <li id="intent-option-inform" role="option" tabindex="-1" data-value="inform" aria-selected="true">
-                  <span class="intent-option-icon intent-icon-inform" aria-hidden="true"></span>
-                  <span class="intent-option-label">Inform</span>
-                </li>
-                <li id="intent-option-compare" role="option" tabindex="-1" data-value="compare">
-                  <span class="intent-option-icon intent-icon-compare" aria-hidden="true"></span>
-                  <span class="intent-option-label">Compare</span>
-                </li>
-                <li id="intent-option-promote" role="option" tabindex="-1" data-value="promote">
-                  <span class="intent-option-icon intent-icon-promote" aria-hidden="true"></span>
-                  <span class="intent-option-label">Promote</span>
-                </li>
-                <li id="intent-option-storytell" role="option" tabindex="-1" data-value="storytell">
-                  <span class="intent-option-icon intent-icon-storytell" aria-hidden="true"></span>
-                  <span class="intent-option-label">Storytell</span>
-                </li>
-                <li id="intent-option-showcase" role="option" tabindex="-1" data-value="showcase">
-                  <span class="intent-option-icon intent-icon-showcase" aria-hidden="true"></span>
-                  <span class="intent-option-label">Showcase</span>
-                </li>
-                <li id="intent-option-explain" role="option" tabindex="-1" data-value="explain">
-                  <span class="intent-option-icon intent-icon-explain" aria-hidden="true"></span>
-                  <span class="intent-option-label">Explain</span>
-                </li>
-                <li id="intent-option-educate" role="option" tabindex="-1" data-value="educate">
-                  <span class="intent-option-icon intent-icon-educate" aria-hidden="true"></span>
-                  <span class="intent-option-label">Educate</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-
+              <div class="layoutexperiment-section-header">
+                <h2 id="layout-controls-heading">Layout</h2>
+                <div class="control-decorations" role="group" aria-labelledby="decorations-label">
+                  <label class="toggle-wrap" for="toggle-decorations">
+                    <input type="checkbox" id="toggle-decorations" class="toggle-input" checked aria-describedby="decorations-label" />
+                    <span id="decorations-label" class="control-label toggle-label">Decorations</span>
+                  </label>
+                </div>
+              </div>
           <div class="control-artboard" role="group" aria-labelledby="artboard-label">
-            <label id="artboard-label" class="control-label">Artboard</label>
+            <label id="artboard-label" class="control-label">Aspect Ratio</label>
             <div class="artboard-custom-wrap">
-              <button type="button" id="artboard-aspect-select" class="artboard-custom-trigger" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="artboard-label" aria-controls="artboard-listbox">
-                <span class="artboard-thumb artboard-thumb-portrait" id="artboard-current-thumb" aria-hidden="true"></span>
-                <span class="artboard-custom-label" id="artboard-current-label">Portrait</span>
-                <span class="artboard-custom-chevron" aria-hidden="true">▼</span>
+              <button type="button" id="artboard-aspect-select" class="btn btn--l btn--icon-label btn--dropdown artboard-custom-trigger" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="artboard-label" aria-controls="artboard-listbox">
+                <span class="btn__icon"><span class="artboard-thumb artboard-thumb-portrait" id="artboard-current-thumb" aria-hidden="true"></span></span>
+                <span class="btn__label artboard-custom-label" id="artboard-current-label">Portrait</span>
+                <span class="btn__chevron" aria-hidden="true"><span class="icon icon--ui icon--ui--chevron-down"><img src="../assets/assets-vector/icons/chevron-down.svg" alt="" /></span></span>
               </button>
               <ul id="artboard-listbox" class="artboard-custom-list" role="listbox" aria-labelledby="artboard-label" hidden>
                 <li role="option" tabindex="-1" data-value="square" aria-selected="false">
@@ -224,15 +186,15 @@
           </div>
           <div class="layoutexperiment-panel layoutexperiment-panel-content">
             <section class="layoutexperiment-section content-options" aria-labelledby="content-options-heading">
-              <h2 id="content-options-heading">Content options</h2>
-
-          <div class="control-decorations" role="group" aria-labelledby="content-decorations-label">
-            <label class="toggle-wrap" for="toggle-content-decorations">
-              <input type="checkbox" id="toggle-content-decorations" class="toggle-input" checked aria-describedby="content-decorations-label" />
-              <span id="content-decorations-label" class="control-label toggle-label">Decorations</span>
-            </label>
-          </div>
-
+              <div class="layoutexperiment-section-header">
+                <h2 id="content-options-heading">Content</h2>
+                <div class="control-decorations" role="group" aria-labelledby="content-decorations-label">
+                  <label class="toggle-wrap" for="toggle-content-decorations">
+                    <input type="checkbox" id="toggle-content-decorations" class="toggle-input" checked aria-describedby="content-decorations-label" />
+                    <span id="content-decorations-label" class="control-label toggle-label">Decorations</span>
+                  </label>
+                </div>
+              </div>
           <div class="content-add-wrap" id="content-add-wrap" hidden>
             <div class="content-add-menu" id="content-add-menu" role="menu" hidden>
               <div class="content-add-submenu-wrap">
@@ -352,9 +314,8 @@
           </div>
 
           <div class="grid-cells-wrap" id="grid-cells-wrap">
-            <h3 class="grid-cells-heading">Grid cells</h3>
+            <button type="button" class="btn btn--l btn--icon-label" id="grid-cells-add-btn"><span class="btn__icon"><span class="icon icon--ui icon--ui--add" aria-hidden="true"><img src="../assets/assets-vector/icons/add.svg" alt="" /></span></span><span class="btn__label">Add content</span></button>
             <ul class="grid-cells-list" id="grid-cells-list" aria-label="Content areas in grid"></ul>
-            <button type="button" class="grid-cells-add-btn" id="grid-cells-add-btn">Add cell</button>
           </div>
 
           <ul class="content-list" id="content-list" aria-label="Content blocks in layout" hidden></ul>
@@ -368,7 +329,7 @@
         <div class="canvas-main">
           <div class="canvas-artboard-wrap" id="canvas-artboard-wrap">
             <div class="artboard show-margin-decorations show-content-decorations" id="artboard" data-aspect="portrait" data-grid="css-grid" role="img" aria-label="Artboard">
-              <p class="layout-placeholder" id="layout-placeholder" hidden>No cells yet. Click <strong>Add cell</strong> in the Content panel to add content to the grid.</p>
+              <p class="layout-placeholder" id="layout-placeholder" hidden>No cells yet. Click <strong>Add content block</strong> in the Content panel to add content to the grid.</p>
               <div id="layout-output" class="layout-output" aria-live="polite" hidden></div>
               <div class="artboard-grid-lines" id="artboard-grid-lines" aria-hidden="true"></div>
             </div>
@@ -1097,36 +1058,39 @@
           contentWrap.className = 'grid-cells-content-wrap';
           var contentTrigger = document.createElement('button');
           contentTrigger.type = 'button';
-          contentTrigger.className = 'grid-cells-content-trigger';
+          contentTrigger.className = 'btn btn--l btn--icon-label btn--dropdown grid-cells-content-trigger';
           contentTrigger.setAttribute('aria-haspopup', 'listbox');
           contentTrigger.setAttribute('aria-expanded', 'false');
           contentTrigger.setAttribute('aria-label', 'Content type');
+          var contentTriggerIcon = document.createElement('span');
+          contentTriggerIcon.className = 'btn__icon';
           var contentTriggerThumb = document.createElement('span');
           contentTriggerThumb.className = 'grid-cells-content-trigger-thumb';
           contentTriggerThumb.appendChild(createContentThumbInner(cell.type, cell.role, cell.asset));
+          contentTriggerIcon.appendChild(contentTriggerThumb);
           var contentTriggerLabel = document.createElement('span');
-          contentTriggerLabel.className = 'grid-cells-content-trigger-label';
+          contentTriggerLabel.className = 'btn__label grid-cells-content-trigger-label';
           contentTriggerLabel.textContent = getContentLabel(cell.type, cell.role, cell.asset);
           var contentTriggerChevron = document.createElement('span');
-          contentTriggerChevron.className = 'grid-cells-content-trigger-chevron';
+          contentTriggerChevron.className = 'btn__chevron';
           contentTriggerChevron.setAttribute('aria-hidden', 'true');
-          contentTriggerChevron.textContent = '\u25BC';
-          contentTrigger.appendChild(contentTriggerThumb);
+          contentTriggerChevron.innerHTML = (window.IconComponent && window.IconComponent.render('ui', 'chevron-down')) || '\u25BC';
+          contentTrigger.appendChild(contentTriggerIcon);
           contentTrigger.appendChild(contentTriggerLabel);
           contentTrigger.appendChild(contentTriggerChevron);
           contentWrap.appendChild(contentTrigger);
           var sizeToggleBtn = document.createElement('button');
           sizeToggleBtn.type = 'button';
-          sizeToggleBtn.className = 'grid-cells-size-toggle';
-          sizeToggleBtn.setAttribute('aria-label', 'Size');
+          sizeToggleBtn.className = 'btn btn--m btn--muted btn--icon-only grid-cells-size-toggle';
+          sizeToggleBtn.setAttribute('aria-label', 'Options');
           sizeToggleBtn.setAttribute('aria-haspopup', 'dialog');
           sizeToggleBtn.setAttribute('aria-expanded', 'false');
-          var sizeIconHtml = (window.IconComponent && window.IconComponent.render('ui', 'size', { className: 'grid-cells-size-icon' })) || '<span class="grid-cells-size-icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><rect x="2" y="2" width="5" height="5" rx="0.5"/><rect x="9" y="2" width="5" height="5" rx="0.5"/><rect x="2" y="9" width="5" height="5" rx="0.5"/><rect x="9" y="9" width="5" height="5" rx="0.5"/></svg></span>';
-          sizeToggleBtn.innerHTML = sizeIconHtml;
+          var sizeIconHtml = (window.IconComponent && window.IconComponent.render('ui', 'options')) || '<span class="icon icon--ui" aria-hidden="true"></span>';
+          sizeToggleBtn.innerHTML = '<span class="btn__icon">' + sizeIconHtml + '</span>';
           var removeBtn = document.createElement('button');
           removeBtn.type = 'button';
-          removeBtn.className = 'grid-cells-remove';
-          removeBtn.innerHTML = (window.IconComponent && window.IconComponent.render('ui', 'delete')) || '<img src="../assets/assets-vector/icons/delete.svg" alt="" aria-hidden="true" />';
+          removeBtn.className = 'btn btn--m btn--muted btn--icon-only grid-cells-remove';
+          removeBtn.innerHTML = '<span class="btn__icon">' + ((window.IconComponent && window.IconComponent.render('ui', 'delete')) || '<img src="../assets/assets-vector/icons/delete.svg" alt="" aria-hidden="true" />') + '</span>';
           removeBtn.setAttribute('aria-label', 'Remove cell');
           summary.appendChild(dragHandle);
           summary.appendChild(contentWrap);
@@ -1136,8 +1100,13 @@
           listEl.appendChild(li);
 
           function closeSizePopup() {
-            if (gridCellsSizePortal && gridCellsSizePortal.parentNode) gridCellsSizePortal.parentNode.removeChild(gridCellsSizePortal);
-            gridCellsSizePortal = null;
+            if (gridCellsSizePortal) {
+              if (gridCellsSizePortal._outsideListener) {
+                document.removeEventListener('mousedown', gridCellsSizePortal._outsideListener);
+              }
+              if (gridCellsSizePortal.parentNode) gridCellsSizePortal.parentNode.removeChild(gridCellsSizePortal);
+              gridCellsSizePortal = null;
+            }
             sizeToggleBtn.setAttribute('aria-expanded', 'false');
           }
           sizeToggleBtn.addEventListener('click', function (e) {
@@ -1169,7 +1138,7 @@
             var popup = document.createElement('div');
             popup.className = 'grid-cells-size-popup';
             popup.setAttribute('role', 'dialog');
-            popup.setAttribute('aria-label', 'Size');
+            popup.setAttribute('aria-label', 'Options');
             var header = document.createElement('div');
             header.className = 'grid-cells-size-popup-header';
             var closeBtn = document.createElement('button');
@@ -1226,6 +1195,13 @@
               { value: 'center', label: 'Centre' },
               { value: 'bottom', label: 'Bottom' }
             ], alignV));
+            var rotation = cell.rotation != null ? cell.rotation : 0;
+            body.appendChild(makeAlignGroup('Rotation', 'rotation', [
+              { value: 0, label: '0°' },
+              { value: 90, label: '90°' },
+              { value: 180, label: '180°' },
+              { value: 270, label: '270°' }
+            ], rotation));
             var hasText = cell.type === 'text' || cell.type === 'micro';
             if (hasText) {
               var textColorGroup = document.createElement('div');
@@ -1360,12 +1336,13 @@
             document.body.appendChild(portal);
             gridCellsSizePortal = portal;
             sizeToggleBtn.setAttribute('aria-expanded', 'true');
-            var onOutsideClick = function (ev) {
+            var onOutside = function (ev) {
               if (portal.contains(ev.target) || sizeToggleBtn.contains(ev.target)) return;
-              document.removeEventListener('click', onOutsideClick);
+              if (portal.contains(document.activeElement)) return;
               closeSizePopup();
             };
-            setTimeout(function () { document.addEventListener('click', onOutsideClick); }, 0);
+            portal._outsideListener = onOutside;
+            setTimeout(function () { document.addEventListener('mousedown', onOutside); }, 0);
           });
           (function (itemIndex, itemEl) {
             var lastOverLi = null;
